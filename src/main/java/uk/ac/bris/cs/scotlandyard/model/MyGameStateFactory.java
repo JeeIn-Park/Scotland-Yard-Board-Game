@@ -1,11 +1,10 @@
 package uk.ac.bris.cs.scotlandyard.model;
 
 import com.google.common.collect.ImmutableList;
-
-import javax.annotation.Nonnull;
-
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Factory;
+
+import javax.annotation.Nonnull;
 
 /**
  * cw-model
@@ -18,8 +17,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Player mrX,
 			ImmutableList<Player> detectives) {
 		// TODO
-		throw new RuntimeException("Implement me!");
+		try {
+			throw new RuntimeException("e");
+		} catch (Exception e) {
+			System.out.println("EXception haha");
+		}
 
+		return null;
 	}
 
 }
