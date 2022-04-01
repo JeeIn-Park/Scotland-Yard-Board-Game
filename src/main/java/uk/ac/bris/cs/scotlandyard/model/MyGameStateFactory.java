@@ -9,6 +9,7 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
 import javax.annotation.Nonnull;
+import javax.xml.stream.Location;
 
 /**
  * cw-model
@@ -26,7 +27,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 	}
 
 	private final class MyGameState implements GameState {
-
 		private GameSetup setup;
 		private ImmutableSet<Piece> remaining;
 		private ImmutableList<LogEntry> log;
@@ -41,6 +41,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				final ImmutableList<LogEntry> log,
 				final Player mrX,
 				final List<Player> detectives){
+
 			this.setup = setup;
 			this.remaining = remaining;
 			this.log = log;
@@ -84,7 +85,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public Optional<Integer> getDetectiveLocation(Piece.Detective detective) {
 			// For all detectives, if Detective#piece == detective, then return the location in an Optional.of();
 			// otherwise, return Optional.empty();
-			return Optional.empty();
+			if( detective == detective ) return Optional.of(mrX.location());
+			else return Optional.empty();
 		}
 
 		/**
