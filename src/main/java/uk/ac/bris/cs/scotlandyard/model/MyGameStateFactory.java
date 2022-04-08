@@ -8,6 +8,7 @@ import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.xml.stream.Location;
 
@@ -22,7 +23,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
-			ImmutableList<Player> detectives) {
+			ImmutableList<Player> detectives)
+
+			throws NullPointerException, IllegalArgumentException {
+
+		if (mrX == null) throw (new NullPointerException());
+			else if (detectives == null) throw (new NullPointerException());
 		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
 	}
 
@@ -82,11 +88,40 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 * @return the location of the given detective; empty if the detective is not part of the game
 		 */
 		@Nonnull @Override
-		public Optional<Integer> getDetectiveLocation(Piece.Detective detective) {
+		public Optional<Integer> getDetectiveLocation(Detective detective) {
 			// For all detectives, if Detective#piece == detective, then return the location in an Optional.of();
 			// otherwise, return Optional.empty();
-			if( detective == detective ) return Optional.of(mrX.location());
-			else return Optional.empty();
+			if ( detective.webColour().equals("#f00")) {
+				Optional<Player> p = detectives.stream()
+						.filter(d -> d.piece().equals(Detective.RED))
+						.findFirst();
+				return Optional.of(p.get().location());
+			}
+			else if ( detective.webColour().equals("#0f0")) {
+				Optional<Player> p = detectives.stream()
+						.filter(d -> d.piece().equals(Detective.GREEN))
+						.findFirst();
+				return Optional.of(p.get().location());
+			}
+			else if ( detective.webColour().equals("#00f")) {
+				Optional<Player> p = detectives.stream()
+						.filter(d -> d.piece().equals(Detective.BLUE))
+						.findFirst();
+				return Optional.of(p.get().location());
+			}
+			else if ( detective.webColour().equals("#fff")) {
+				Optional<Player> p = detectives.stream()
+						.filter(d -> d.piece().equals(Detective.WHITE))
+						.findFirst();
+				return Optional.of(p.get().location());
+			}
+			else if ( detective.webColour().equals("#ff0")) {
+				Optional<Player> p = detectives.stream()
+						.filter(d -> d.piece().equals(Detective.YELLOW))
+						.findFirst();
+				return Optional.of(p.get().location());
+			}
+				else return Optional.empty();
 		}
 
 		/**
