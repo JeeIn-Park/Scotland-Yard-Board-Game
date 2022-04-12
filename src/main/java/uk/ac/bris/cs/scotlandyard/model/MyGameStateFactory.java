@@ -2,6 +2,7 @@ package uk.ac.bris.cs.scotlandyard.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.graph.ValueGraphBuilder;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
@@ -23,13 +24,36 @@ public final class MyGameStateFactory implements Factory<GameState> {
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
-			ImmutableList<Player> detectives)
+			ImmutableList<Player> detectives) throws NullPointerException, IllegalArgumentException {
 
-			throws NullPointerException, IllegalArgumentException {
+		//check setup
+		GameSetup setupCheck;
+		setupCheck = setup;
+		//TODO: testEmptyGraphShouldThrow
 
+		//check mrX
 		if (mrX == null) throw (new NullPointerException());
-			else if (detectives == null) throw (new NullPointerException());
-		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
+
+		//check detectives
+		if (detectives == null) throw (new NullPointerException());
+		for (int i = 0; i<detectives.size(); i++) {
+
+			Player detectiveCheck;
+			detectiveCheck = detectives.get(i);
+			if (detectiveCheck.has(Ticket.SECRET)) throw (new IllegalArgumentException());
+			if (detectiveCheck.has(Ticket.DOUBLE)) throw (new IllegalArgumentException());
+			//TODO: testLocationOverlapBetweenDetectivesShouldThrow
+			//TODO: testGetPlayerTicketsMatchesSupplied
+			//TODO: testGetPlayersMatchesSupplied
+			//TODO: testDuplicateDetectivesShouldThrow
+
+
+
+
+		}
+
+		GameState stateCheck = new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
+		return stateCheck;
 	}
 
 	private final class MyGameState implements GameState {
@@ -87,6 +111,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 * @param detective the detective
 		 * @return the location of the given detective; empty if the detective is not part of the game
 		 */
+
 		@Nonnull @Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
 			// For all detectives, if Detective#piece == detective, then return the location in an Optional.of();
@@ -122,6 +147,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				return Optional.of(p.get().location());
 			}
 				else return Optional.empty();
+			//TODO: testGetPlayerLocationForNonExistentPlayerIsEmpty
+			//TODO: simplify
 		}
 
 		/**
@@ -130,6 +157,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public Optional<Board.TicketBoard> getPlayerTickets(Piece piece) {
+			//TODO: testGetPlayerTicketsForNonExistentPlayerIsEmpty
 			return Optional.empty();
 		}
 
