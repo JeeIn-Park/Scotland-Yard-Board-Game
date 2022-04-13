@@ -1,61 +1,20 @@
 package uk.ac.bris.cs.scotlandyard.model;
-
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ValueGraphBuilder;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.xml.stream.Location;
 
 /**
  * cw-model
  * Stage 1: Complete this class
  */
 public final class MyGameStateFactory implements Factory<GameState> {
-	/**
-	 * @return a new instance of GameState.
-	 */
-	@Nonnull @Override public GameState build(
-			GameSetup setup,
-			Player mrX,
-			ImmutableList<Player> detectives) throws NullPointerException, IllegalArgumentException {
-
-		//check setup
-		GameSetup setupCheck;
-		setupCheck = setup;
-		//TODO: testEmptyGraphShouldThrow
-
-		//check mrX
-		if (mrX == null) throw (new NullPointerException());
-
-		//check detectives
-		if (detectives == null) throw (new NullPointerException());
-		for (int i = 0; i<detectives.size(); i++) {
-
-			Player detectiveCheck;
-			detectiveCheck = detectives.get(i);
-			if (detectiveCheck.has(Ticket.SECRET)) throw (new IllegalArgumentException());
-			if (detectiveCheck.has(Ticket.DOUBLE)) throw (new IllegalArgumentException());
-			//TODO: testLocationOverlapBetweenDetectivesShouldThrow
-			//TODO: testGetPlayerTicketsMatchesSupplied
-			//TODO: testGetPlayersMatchesSupplied
-			//TODO: testDuplicateDetectivesShouldThrow
-
-
-
-
-		}
-
-		GameState stateCheck = new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
-		return stateCheck;
-	}
-
 	private final class MyGameState implements GameState {
 		private GameSetup setup;
 		private ImmutableSet<Piece> remaining;
@@ -78,19 +37,22 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.mrX = mrX;
 			this.detectives = detectives;
 			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
+
 		}
 
 		/**
 		 * @return the current game setup
 		 */
-		@Nonnull @Override public GameSetup getSetup() {return setup;}
+		@Nonnull @Override public GameSetup getSetup() { return setup; }
 
 		/**
 		 * @return all players in the game
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
-			return null;
+			ImmutableSet<Piece> players = null;
+			return  players;
+			//TODO: testGetPlayersMatchesSupplied
 		}
 
 		/**
@@ -103,52 +65,27 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 *                                  {@link #getAvailableMoves()}
 		 */
 		@Nonnull @Override
-		public GameState advance(Move move) {
-			return null;
+		public GameState advance(Move move) throws IllegalArgumentException{
+			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
+			return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
 		}
 
 		/**
 		 * @param detective the detective
 		 * @return the location of the given detective; empty if the detective is not part of the game
 		 */
-
 		@Nonnull @Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
-			// For all detectives, if Detective#piece == detective, then return the location in an Optional.of();
+			// For all detectives, if Detective#piece == detective,
+			// then return the location in an Optional.of();
 			// otherwise, return Optional.empty();
-			if ( detective.webColour().equals("#f00")) {
-				Optional<Player> p = detectives.stream()
-						.filter(d -> d.piece().equals(Detective.RED))
-						.findFirst();
-				return Optional.of(p.get().location());
-			}
-			else if ( detective.webColour().equals("#0f0")) {
-				Optional<Player> p = detectives.stream()
-						.filter(d -> d.piece().equals(Detective.GREEN))
-						.findFirst();
-				return Optional.of(p.get().location());
-			}
-			else if ( detective.webColour().equals("#00f")) {
-				Optional<Player> p = detectives.stream()
-						.filter(d -> d.piece().equals(Detective.BLUE))
-						.findFirst();
-				return Optional.of(p.get().location());
-			}
-			else if ( detective.webColour().equals("#fff")) {
-				Optional<Player> p = detectives.stream()
-						.filter(d -> d.piece().equals(Detective.WHITE))
-						.findFirst();
-				return Optional.of(p.get().location());
-			}
-			else if ( detective.webColour().equals("#ff0")) {
-				Optional<Player> p = detectives.stream()
-						.filter(d -> d.piece().equals(Detective.YELLOW))
-						.findFirst();
-				return Optional.of(p.get().location());
-			}
-				else return Optional.empty();
-			//TODO: testGetPlayerLocationForNonExistentPlayerIsEmpty
-			//TODO: simplify
+			String detectiveColour;
+			detectiveColour = detective.webColour();
+			Optional<Player> p = detectives.stream()
+					.filter(d -> d.piece().webColour().equals(detectiveColour))
+					.findFirst();
+				if (p.isEmpty()) return Optional.empty();
+				else return Optional.of(p.get().location());
 		}
 
 		/**
@@ -157,8 +94,25 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public Optional<Board.TicketBoard> getPlayerTickets(Piece piece) {
+			ImmutableMap<Ticket, Integer> xt;
+			xt = this.mrX.tickets();
+			if (piece == MrX.MRX) return Optional.of(xt)
+					.map(tickets -> ticket -> xt.getOrDefault(ticket, 0));
+
+			String detectiveColour;
+			detectiveColour = piece.webColour();
+			Optional<Player> p = detectives.stream()
+					.filter(d -> d.piece().webColour().equals(detectiveColour))
+					.findFirst();
+			ImmutableMap<Ticket, Integer> dt;
+			if (p.isEmpty()) return Optional.empty();
+			else {
+				dt = p.get().tickets();
+				return Optional.of(dt)
+						.map(tickets -> ticket -> dt.getOrDefault(ticket, 0));
+			}
+
 			//TODO: testGetPlayerTicketsForNonExistentPlayerIsEmpty
-			return Optional.empty();
 		}
 
 		/**
@@ -173,6 +127,29 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Piece> getWinner() {
+			//TODO: testWinningPlayerIsEmptyInitially
+			return null;
+		}
+
+
+		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
+
+			// TODO create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
+
+			for(int destination : setup.graph.adjacentNodes(source)) {
+				// TODO find out if destination is occupied by a detective
+				//  if the location is occupied, don't add to the collection of moves to return
+
+				for(Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of()) ) {
+					// TODO find out if the player has the required tickets
+					//  if it does, construct a SingleMove and add it the collection of moves to return
+				}
+
+				// TODO consider the rules of secret moves here
+				//  add moves to the destination via a secret ticket if there are any left with the player
+			}
+
+			// TODO return the collection of moves
 			return null;
 		}
 
@@ -186,6 +163,47 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 	}
 
+	/**
+	 * @return a new instance of GameState.
+	 */
+	@Nonnull @Override public GameState build(
+			GameSetup setup,
+			Player mrX,
+			ImmutableList<Player> detectives) throws NullPointerException, IllegalArgumentException {
+
+		//check setup
+		boolean state = false;
+		if( state ) throw new IllegalArgumentException();
+		//TODO: testEmptyGraphShouldThrow
+
+		//check mrX
+		if (mrX == null) throw new NullPointerException();
+
+		//check detectives
+		if (detectives == null) throw new NullPointerException();
+		Player detectiveCheck;
+		String[] detectiveColour = new String[6];
+
+		int[] detectiveLocation = new int[6];
+		for (int i = 0; i<detectives.size(); i++) {
+			detectiveCheck = detectives.get(i);
+			if (detectiveCheck.has(Ticket.SECRET)) throw new IllegalArgumentException();
+			if (detectiveCheck.has(Ticket.DOUBLE)) throw new IllegalArgumentException();
+
+			detectiveColour[i] = detectiveCheck.piece().webColour();
+			for (int k = 0; k<i; k++) {
+				if (detectiveColour[k].equals(detectiveColour[i])) throw new IllegalArgumentException();
+			}
+			detectiveLocation[i] = detectiveCheck.location();
+			for (int k = 0; k<i; k++) {
+				if (detectiveLocation[k] == detectiveLocation[i]) throw new IllegalArgumentException();
+			}
+
+		}
+
+		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
+
+	}
 
 
 
