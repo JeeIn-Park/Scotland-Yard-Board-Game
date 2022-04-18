@@ -50,10 +50,30 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
-			ImmutableSet<Piece> players = null;
-			return  players;
-			//TODO: testGetPlayersMatchesSupplied
-		}
+            Piece[] getPiece = new Piece[detectives.size() + 1];
+            getPiece[0] = mrX.piece();
+
+            for (int i = 0; i < detectives.size(); i++) {
+                getPiece[i + 1] = detectives.get(i).piece();
+            }
+            ImmutableSet<Piece> set = null;
+            if (detectives.size() == 1) {
+                set = ImmutableSet.of(getPiece[0], getPiece[1]);
+            }
+            if (detectives.size() == 2) {
+                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2]);
+            }
+            if (detectives.size() == 3) {
+                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2], getPiece[3]);
+            }
+            if (detectives.size() == 4) {
+                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2], getPiece[3], getPiece[4]);
+            }
+            if (detectives.size() == 5) {
+                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2], getPiece[3], getPiece[4], getPiece[5]);
+            }
+            return set;
+        }
 
 		/**
 		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
@@ -111,8 +131,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				return Optional.of(dt)
 						.map(tickets -> ticket -> dt.getOrDefault(ticket, 0));
 			}
-
-			//TODO: testGetPlayerTicketsForNonExistentPlayerIsEmpty
 		}
 
 		/**
@@ -133,24 +151,25 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 
 		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
-
-			// TODO create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
+			//  create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
+            HashSet<SingleMove> singleMoveHashSet = null;
 
 			for(int destination : setup.graph.adjacentNodes(source)) {
-				// TODO find out if destination is occupied by a detective
+
+				//  find out if destination is occupied by a detective
 				//  if the location is occupied, don't add to the collection of moves to return
 
 				for(Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of()) ) {
-					// TODO find out if the player has the required tickets
+					//  find out if the player has the required tickets
 					//  if it does, construct a SingleMove and add it the collection of moves to return
 				}
+                if(player.has(Ticket.SECRET)){
+                    // consider the rules of secret moves here
+                    // add moves to the destination via a secret ticket if there are any left with the player
+                }
 
-				// TODO consider the rules of secret moves here
-				//  add moves to the destination via a secret ticket if there are any left with the player
 			}
-
-			// TODO return the collection of moves
-			return null;
+			return singleMoveHashSet;
 		}
 
 		/**
@@ -159,6 +178,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
+            makeSingleMoves(setup, detectives, detectives.get(1), 1);
 			return null;
 		}
 	}
@@ -173,7 +193,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		//check setup
 		boolean state = false;
-		if( state ) throw new IllegalArgumentException();
+        if( state ) throw new IllegalArgumentException();
 		//TODO: testEmptyGraphShouldThrow
 
 		//check mrX
