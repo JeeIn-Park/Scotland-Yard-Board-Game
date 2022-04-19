@@ -154,24 +154,31 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//  create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
             HashSet<SingleMove> singleMoveHashSet = null;
 
-			for(int destination : setup.graph.adjacentNodes(source)) {
-
-				//  find out if destination is occupied by a detective
-				//  if the location is occupied, don't add to the collection of moves to return
-
-				for(Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of()) ) {
-					//  find out if the player has the required tickets
-					//  if it does, construct a SingleMove and add it the collection of moves to return
-				}
-                if(player.has(Ticket.SECRET)){
-                    // consider the rules of secret moves here
-                    // add moves to the destination via a secret ticket if there are any left with the player
+            for(int destination : setup.graph.adjacentNodes(source)) {
+                //  find out if destination is occupied by a detective
+                //  if the location is occupied, don't add to the collection of moves to return
+                if( destination != source) {
+                    for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
+                        //  find out if the player has the required tickets
+                        //  if it does, construct a SingleMove and add it the collection of moves to return
+                        Ticket transportation;
+                        transportation = Ticket.TAXI; //TODO
+                        singleMoveHashSet.add(new SingleMove(player.piece(), source, transportation, destination));
+                    }
+                    if (player.has(Ticket.SECRET)) {
+                        // consider the rules of secret moves here
+                        // add moves to the destination via a secret ticket if there are any left with the player
+                    }
                 }
 
 			}
 			return singleMoveHashSet;
 		}
 
+        private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, int source){
+            HashSet<DoubleMove> doubleMoveHashSet = null;
+            return doubleMoveHashSet;
+        }
 		/**
 		 * @return the current available moves of the game.
 		 * This is mutually exclusive with {@link #getWinner()}
@@ -179,8 +186,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
             makeSingleMoves(setup, detectives, detectives.get(1), 1);
-			return null;
-		}
+            return null;
+        }
 	}
 
 	/**
