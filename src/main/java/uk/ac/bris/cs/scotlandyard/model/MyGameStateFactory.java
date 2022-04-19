@@ -167,8 +167,49 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return singleMoveHashSet;
 		}
 
-        private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, int source){
+        private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, List<Player> detectives, Player mrX, int source){
             HashSet<DoubleMove> doubleMoveHashSet = new HashSet<>();
+			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, mrX, source);
+			Iterator<SingleMove> firstMoveE = firstMoves.iterator();
+			for (int i = 0; i<firstMoves.size(); i++){
+				SingleMove firstMove = firstMoveE.next();
+				Ticket ticket1 = firstMove.ticket;
+				Ticket ticket2;
+				int destination1 = firstMove.destination;
+
+				//  find out if destination is occupied by a detective
+				//  if the location is occupied, don't add to the collection of moves to return
+				for(int destination2 : setup.graph.adjacentNodes(destination1)){
+					boolean state = true;
+					for (int n = 0; n<detectives.size(); n++) {
+						if (destination2 == detectives.get(n).location()) state = false;
+
+					}
+					if (state) {
+							for (Transport t : setup.graph.edgeValueOrDefault(destination1, destination2, ImmutableSet.of())) {
+								//  find out if the player has the required tickets
+								//  if it does, construct a SingleMove and add it the collection of moves to return
+								if (mrX.has(t.requiredTicket())) {
+									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, t.requiredTicket(), destination2));
+									ticket2 = t.requiredTicket();
+									if (mrX.has(Ticket.SECRET)) {
+										// consider the rules of secret moves here
+										// add moves to the destination via a secret ticket if there are any left with the player
+										doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, ticket2, destination2));
+										doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, Ticket.SECRET, destination2));
+
+										if(mrX.hasAtLeast(Ticket.SECRET, 2)) {
+											doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, Ticket.SECRET, destination2));
+										}
+									}
+								}
+							}
+					}
+				}
+
+
+			}
+
             return doubleMoveHashSet;
         }
 		/**
@@ -178,21 +219,55 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
 
-			//single move
+			//mrx
+			//TODO: double move
 			Set<SingleMove> mrxSingle = new HashSet<>();
 			mrxSingle = makeSingleMoves(setup, detectives, mrX, mrX.location());
+			Set<DoubleMove> mrxDouble = new HashSet<>();
+			mrxDouble = makeDoubleMoves(setup, detectives, mrX, mrX.location());
 
-			//TODO: double move
-			//TODO: detective move
+			Move[] mrxMove = new Move[mrxSingle.size() + mrxDouble.size()];
 
-			Move[] result = new Move[mrxSingle.size()];
-			Iterator<SingleMove> sm = mrxSingle.iterator();
+			Iterator<SingleMove> mrxSingleE = mrxSingle.iterator();
 			for (int i = 0; i<mrxSingle.size(); i++){
-				result[i] = sm.next();
-		}
-			ImmutableSet<Move> returnValue = ImmutableSet.copyOf(result);
-			return returnValue;
+				mrxMove[i] = mrxSingleE.next();
+			}
+			Iterator<DoubleMove> mrxDoubleE = mrxDouble.iterator();
+			for (int i = 0; i<mrxDouble.size(); i++){
+				mrxMove[mrxSingle.size()+i] = mrxDoubleE.next();
+			}
 
+
+			//detective
+			Set<Set<SingleMove>> detSingle2 = new HashSet<>();
+			int detectiveMoveSize = 0;
+			for (Player d : detectives) {
+				detSingle2.add(makeSingleMoves(setup, detectives, d, d.location() ));
+				detectiveMoveSize += makeSingleMoves(setup, detectives, d, d.location()).size();
+			}
+			Iterator<Set<SingleMove>> detSingleE2 = detSingle2.iterator();
+			Set<SingleMove>[] detMove2 = new Set[detSingle2.size()];
+			for (int i = 0; i<detSingle2.size(); i++){
+				detMove2[i] = detSingleE2.next();
+			}
+
+			Move[] detMove = new Move[detectiveMoveSize];
+
+			Set<SingleMove> detSingle = new HashSet<>();
+			int detMoveStorage = 0;
+			int for_detMoveStorage = 0;
+			for (int i = 0; i<detMove2.length; i++){
+				detSingle = detMove2[i];
+				detMoveStorage += for_detMoveStorage;
+				for (int k = detMoveStorage; k<detMove2[i].size() + detMoveStorage; k++){
+					Iterator<SingleMove> detSingleE = detSingle.iterator();
+					detMove[k] = detSingleE.next();
+					for_detMoveStorage ++;
+				}
+			}
+
+			//TODO: why doesn't contain detectives' move
+			return ImmutableSet.copyOf(mrxMove);
 
 		}
 	}
