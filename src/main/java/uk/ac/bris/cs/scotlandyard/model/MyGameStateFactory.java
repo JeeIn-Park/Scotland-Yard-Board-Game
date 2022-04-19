@@ -8,6 +8,7 @@ import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
+import java.util.stream.Collector;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
@@ -51,30 +52,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
-            Piece[] getPiece = new Piece[detectives.size() + 1];
-            getPiece[0] = mrX.piece();
+			Piece[] getPiece = new Piece[detectives.size() + 1];
+			getPiece[0] = mrX.piece();
 
-            for (int i = 0; i < detectives.size(); i++) {
-                getPiece[i + 1] = detectives.get(i).piece();
-            }
-            ImmutableSet<Piece> set = null;
-            if (detectives.size() == 1) {
-                set = ImmutableSet.of(getPiece[0], getPiece[1]);
-            }
-            if (detectives.size() == 2) {
-                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2]);
-            }
-            if (detectives.size() == 3) {
-                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2], getPiece[3]);
-            }
-            if (detectives.size() == 4) {
-                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2], getPiece[3], getPiece[4]);
-            }
-            if (detectives.size() == 5) {
-                set = ImmutableSet.of(getPiece[0], getPiece[1], getPiece[2], getPiece[3], getPiece[4], getPiece[5]);
-            }
-            return set;
+			for (int i = 0; i < detectives.size(); i++) {
+				getPiece[i + 1] = detectives.get(i).piece();
+			}
+			ImmutableSet<Piece> result = ImmutableSet.copyOf(getPiece);
+			return result;
         }
+
 
 		/**
 		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
@@ -88,7 +75,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override
 		public GameState advance(Move move) throws IllegalArgumentException{
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
-			return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
+			return null;
 		}
 
 		/**
@@ -153,7 +140,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
 			//  create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
-            HashSet<SingleMove> singleMoveHashSet = null;
+            HashSet<SingleMove> singleMoveHashSet = new HashSet<>();
 
             for(int destination : setup.graph.adjacentNodes(source)) {
                 //  find out if destination is occupied by a detective
@@ -183,7 +170,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
         private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, int source){
-            HashSet<DoubleMove> doubleMoveHashSet = null;
+            HashSet<DoubleMove> doubleMoveHashSet = new HashSet<>();
             return doubleMoveHashSet;
         }
 		/**
@@ -192,13 +179,17 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
-			HashSet<Move> set = null;
-			set.add((Move) makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			HashSet<Set<SingleMove>> set = new HashSet<>();
+			set.add(makeSingleMoves(setup, detectives, mrX, mrX.location()));
 			for (Player d : detectives) {
-				set.add((Move) makeSingleMoves(setup, detectives, d, d.location() ));
+				set.add(makeSingleMoves(setup, detectives, d, d.location() ));
 			}
-            return (ImmutableSet<Move>) Collections.unmodifiableSet(set);
-        }
+			Move[] m = new Move[set.size()];
+			set.toArray(m);
+			return ImmutableSet.copyOf(m);
+
+
+		}
 	}
 
 	/**
@@ -210,9 +201,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			ImmutableList<Player> detectives) throws NullPointerException, IllegalArgumentException {
 
 		//check setup
-		boolean state = false;
-        if( state ) throw new IllegalArgumentException();
-		//TODO: testEmptyGraphShouldThrow
+        if( setup.graph.nodes().isEmpty() ) throw new IllegalArgumentException();
 
 		//check mrX
 		if (mrX == null) throw new NullPointerException();
