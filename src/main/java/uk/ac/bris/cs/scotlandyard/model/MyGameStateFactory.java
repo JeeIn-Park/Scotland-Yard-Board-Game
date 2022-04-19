@@ -8,9 +8,7 @@ import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
-import java.util.stream.Collector;
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * cw-model
@@ -179,14 +177,21 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
-			HashSet<Set<SingleMove>> set = new HashSet<>();
-			set.add(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-			for (Player d : detectives) {
-				set.add(makeSingleMoves(setup, detectives, d, d.location() ));
-			}
-			Move[] m = new Move[set.size()];
-			set.toArray(m);
-			return ImmutableSet.copyOf(m);
+
+			//single move
+			Set<SingleMove> mrxSingle = new HashSet<>();
+			mrxSingle = makeSingleMoves(setup, detectives, mrX, mrX.location());
+
+			//TODO: double move
+			//TODO: detective move
+
+			Move[] result = new Move[mrxSingle.size()];
+			Iterator<SingleMove> sm = mrxSingle.iterator();
+			for (int i = 0; i<mrxSingle.size(); i++){
+				result[i] = sm.next();
+		}
+			ImmutableSet<Move> returnValue = ImmutableSet.copyOf(result);
+			return returnValue;
 
 
 		}
