@@ -171,7 +171,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
             HashSet<DoubleMove> doubleMoveHashSet = new HashSet<>();
 			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, mrX, source);
 			Iterator<SingleMove> firstMoveE = firstMoves.iterator();
-			for (int i = 0; i<firstMoves.size(); i++){
+			if (mrX.has(Ticket.DOUBLE)){
+
+			for (int i = 0; i<firstMoves.size(); i++) {
 				SingleMove firstMove = firstMoveE.next();
 				Ticket ticket1 = firstMove.ticket;
 				Ticket ticket2;
@@ -179,36 +181,33 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 				//  find out if destination is occupied by a detective
 				//  if the location is occupied, don't add to the collection of moves to return
-				for(int destination2 : setup.graph.adjacentNodes(destination1)){
+				for (int destination2 : setup.graph.adjacentNodes(destination1)) {
 					boolean state = true;
-					for (int n = 0; n<detectives.size(); n++) {
+					for (int n = 0; n < detectives.size(); n++) {
 						if (destination2 == detectives.get(n).location()) state = false;
-
 					}
 					if (state) {
-							for (Transport t : setup.graph.edgeValueOrDefault(destination1, destination2, ImmutableSet.of())) {
-								//  find out if the player has the required tickets
-								//  if it does, construct a SingleMove and add it the collection of moves to return
-								if (mrX.has(t.requiredTicket())) {
-									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, t.requiredTicket(), destination2));
-									ticket2 = t.requiredTicket();
-									if (mrX.has(Ticket.SECRET)) {
-										// consider the rules of secret moves here
-										// add moves to the destination via a secret ticket if there are any left with the player
-										doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, ticket2, destination2));
-										doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, Ticket.SECRET, destination2));
-
-										if(mrX.hasAtLeast(Ticket.SECRET, 2)) {
-											doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, Ticket.SECRET, destination2));
-										}
-									}
+						for (Transport t : setup.graph.edgeValueOrDefault(destination1, destination2, ImmutableSet.of())) {
+							//  find out if the player has the required tickets
+							//  if it does, construct a SingleMove and add it the collection of moves to return
+							ticket2 = t.requiredTicket();
+							if (mrX.has(ticket2)) {
+								if (ticket1 != ticket2) {
+									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, ticket2, destination2));
 								}
-							}
-					}
-				}
+								if (ticket1 == ticket2 & mrX.hasAtLeast(ticket1, 2)) {
+									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, ticket1, destination2));
+								}
+								if (mrX.has(Ticket.SECRET)) {
+									// consider the rules of secret moves here
+									// add moves to the destination via a secret ticket if there are any left with the player
+									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, ticket2, destination2));
+									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, Ticket.SECRET, destination2));
 
+									if (mrX.hasAtLeast(Ticket.SECRET, 2)) {
+										doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, Ticket.SECRET, destination2));
 
-			}
+									}}}}}}}}
 
             return doubleMoveHashSet;
         }
