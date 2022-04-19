@@ -60,7 +60,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return result;
         }
 
-
 		/**
 		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
 		 * chosen and supplied as the parameter
@@ -73,7 +72,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override
 		public GameState advance(Move move) throws IllegalArgumentException{
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
-			return null;
+			ImmutableSet<Move> availableMoves = getAvailableMoves();
+			if (availableMoves.contains(move)) {
+				return build(setup, mrX, (ImmutableList<Player>) detectives);
+			} else throw new IllegalArgumentException();
 		}
 
 		/**
@@ -171,7 +173,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
             HashSet<DoubleMove> doubleMoveHashSet = new HashSet<>();
 			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, mrX, source);
 			Iterator<SingleMove> firstMoveE = firstMoves.iterator();
-			if (mrX.has(Ticket.DOUBLE)){
+			if (mrX.has(Ticket.DOUBLE) && setup.moves.size()>1){
 
 			for (int i = 0; i<firstMoves.size(); i++) {
 				SingleMove firstMove = firstMoveE.next();
@@ -219,7 +221,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public ImmutableSet<Move> getAvailableMoves() {
 
 			//mrx
-			//TODO: double move
 			Set<SingleMove> mrxSingle = new HashSet<>();
 			mrxSingle = makeSingleMoves(setup, detectives, mrX, mrX.location());
 			Set<DoubleMove> mrxDouble = new HashSet<>();
