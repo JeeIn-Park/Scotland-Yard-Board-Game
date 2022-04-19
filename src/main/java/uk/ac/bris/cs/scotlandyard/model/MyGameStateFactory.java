@@ -267,7 +267,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 
 			//TODO: why doesn't contain detectives' move
-			return ImmutableSet.copyOf(mrxMove);
+			ImmutableSet<Move> totalMove = ImmutableSet.copyOf(mrxMove);
+			return totalMove;
 
 		}
 	}
