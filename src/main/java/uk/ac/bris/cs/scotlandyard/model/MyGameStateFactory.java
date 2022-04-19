@@ -9,6 +9,7 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * cw-model
@@ -157,20 +158,26 @@ public final class MyGameStateFactory implements Factory<GameState> {
             for(int destination : setup.graph.adjacentNodes(source)) {
                 //  find out if destination is occupied by a detective
                 //  if the location is occupied, don't add to the collection of moves to return
-                if( destination != source) {
-                    for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
-                        //  find out if the player has the required tickets
-                        //  if it does, construct a SingleMove and add it the collection of moves to return
-                        Ticket transportation;
-                        transportation = Ticket.TAXI; //TODO
-                        singleMoveHashSet.add(new SingleMove(player.piece(), source, transportation, destination));
-                    }
-                    if (player.has(Ticket.SECRET)) {
-                        // consider the rules of secret moves here
-                        // add moves to the destination via a secret ticket if there are any left with the player
-                    }
-                }
-
+				boolean state = true;
+				for (int n = 0; n<detectives.size(); n++) {
+					if (destination == detectives.get(n).location()) state = false;
+				}
+				if (state) {
+					{
+						for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
+							//  find out if the player has the required tickets
+							//  if it does, construct a SingleMove and add it the collection of moves to return
+							if (player.has(t.requiredTicket())) {
+								singleMoveHashSet.add(new SingleMove(player.piece(), source, t.requiredTicket(), destination));
+							}
+						}
+						if (player.has(Ticket.SECRET)) {
+							// consider the rules of secret moves here
+							// add moves to the destination via a secret ticket if there are any left with the player
+							singleMoveHashSet.add( new SingleMove(player.piece(), source, Ticket.SECRET, destination));
+						}
+					}
+				}
 			}
 			return singleMoveHashSet;
 		}
@@ -185,8 +192,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
-            makeSingleMoves(setup, detectives, detectives.get(1), 1);
-            return null;
+			HashSet<Move> set = null;
+			set.add((Move) makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			for (Player d : detectives) {
+				set.add((Move) makeSingleMoves(setup, detectives, d, d.location() ));
+			}
+            return (ImmutableSet<Move>) Collections.unmodifiableSet(set);
         }
 	}
 
