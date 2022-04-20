@@ -234,48 +234,35 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			//mrx
-			Set<SingleMove> mrxSingle = new HashSet<>();
-			mrxSingle = makeSingleMoves(setup, detectives, mrX, mrX.location());
-			Set<DoubleMove> mrxDouble = new HashSet<>();
-			mrxDouble = makeDoubleMoves(setup, detectives, mrX, mrX.location());
+			Set<SingleMove> mrxSingleS = new HashSet<>();
+			mrxSingleS = makeSingleMoves(setup, detectives, mrX, mrX.location());
+			Set<DoubleMove> mrxDoubleS = new HashSet<>();
+			mrxDoubleS = makeDoubleMoves(setup, detectives, mrX, mrX.location());
 
-			Move[] mrxMove = new Move[mrxSingle.size() + mrxDouble.size()];
+			Move[] mrxMove = new Move[mrxSingleS.size() + mrxDoubleS.size()];
 
-			Iterator<SingleMove> mrxSingleE = mrxSingle.iterator();
-			for (int i = 0; i<mrxSingle.size(); i++){
-				mrxMove[i] = mrxSingleE.next();
+			Iterator<SingleMove> mrxSingleSE = mrxSingleS.iterator();
+			for (int i = 0; i<mrxSingleS.size(); i++){
+				mrxMove[i] = mrxSingleSE.next();
 			}
-			Iterator<DoubleMove> mrxDoubleE = mrxDouble.iterator();
-			for (int i = 0; i<mrxDouble.size(); i++){
-				mrxMove[mrxSingle.size()+i] = mrxDoubleE.next();
+			Iterator<DoubleMove> mrxDoubleSE = mrxDoubleS.iterator();
+			for (int i = 0; i<mrxDoubleS.size(); i++){
+				mrxMove[mrxSingleS.size()+i] = mrxDoubleSE.next();
 			}
-
 
 			//detective
-			Set<Set<SingleMove>> detSingle2 = new HashSet<>();
-			int detectiveMoveSize = 0;
+			List<Set<SingleMove>> detSingleSL = new ArrayList<>();
+			List<SingleMove> detSingleL = new ArrayList<>();
 			for (Player d : detectives) {
-				detSingle2.add(makeSingleMoves(setup, detectives, d, d.location() ));
-				detectiveMoveSize += makeSingleMoves(setup, detectives, d, d.location()).size();
-			}
-			Iterator<Set<SingleMove>> detSingleE2 = detSingle2.iterator();
-			Set<SingleMove>[] detMove2 = new Set[detSingle2.size()];
-			for (int i = 0; i<detSingle2.size(); i++){
-				detMove2[i] = detSingleE2.next();
-			}
-			Move[] detMove = new Move[detectiveMoveSize];
-			Set<SingleMove> detSingle = new HashSet<>();
-			int detMoveStorage = 0;
-			int for_detMoveStorage = 0;
-			for (int i = 0; i<detMove2.length; i++){
-				detSingle = detMove2[i];
-				detMoveStorage += for_detMoveStorage;
-				for (int k = detMoveStorage; k<detMove2[i].size() + detMoveStorage; k++){
-					Iterator<SingleMove> detSingleE = detSingle.iterator();
-					detMove[k] = detSingleE.next();
-					for_detMoveStorage ++;
+				if(remaining.contains(d.piece())) {
+					detSingleSL.add(makeSingleMoves(setup, detectives, d, d.location()));
 				}
 			}
+			for ( Set<SingleMove> detSingleS : detSingleSL){
+				detSingleL.addAll(detSingleS);
+			}
+			int detMoveSize = detSingleL.size();
+			Move[] detMove = detSingleL.toArray(new Move[detMoveSize]);
 
 			if (remaining.contains(mrX.piece())) {return ImmutableSet.copyOf(mrxMove);}
 				else return ImmutableSet.copyOf(detMove);
