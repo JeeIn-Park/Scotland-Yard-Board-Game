@@ -74,25 +74,61 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.moves = getAvailableMoves();
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
+			Player newMrx = this.mrX;
+			List<Player> newDet = this.detectives;
 			Piece nowMove = move.commencedBy();
+			int fromHere = move.source();
+			int destinationOfMove = move.accept(new Visitor<Integer>() {
+				@Override
+				public Integer visit(SingleMove move) {
+					return move.destination;}
+				@Override
+				public Integer visit(DoubleMove move) {
+					return move.destination2;}
+			});
 
 			//when mrx moves
 			if(nowMove == mrX.piece()){
+				
 				Piece[] getPiece = new Piece[detectives.size()];
 				for (int i = 0; i < detectives.size(); i++) {
 					getPiece[i] = detectives.get(i).piece();
 				}
 				remaining = ImmutableSet.copyOf(getPiece);
+
+				Map<Ticket, Integer> mrxTickets = new HashMap<>();
+				mrxTickets.putAll(mrX.tickets());
+				if (move.getClass() == SingleMove.class){
+					mrxTickets.put(((SingleMove) move).ticket, (int)mrxTickets.get(((SingleMove) move).ticket) -1);
+				}
+				if (move.getClass() == DoubleMove.class){
+					mrxTickets.put(((DoubleMove) move).ticket1, (int)mrxTickets.get(((DoubleMove) move).ticket1) -1);
+					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
+				}
+				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
 			}
 
-			//when detective moves
-			List<Piece> remainingL = new ArrayList<>(remaining);
-			remainingL.remove(nowMove);
-			int remainingSize = remainingL.size();
-			Piece[] remainingA = remainingL.toArray(new Piece[remainingSize]);
-			remaining = ImmutableSet.copyOf(remainingA);
 
-			return new MyGameState(setup, remaining, log, mrX, detectives);
+			//when detective moves
+			if(nowMove != mrX.piece()) {
+
+				List<Piece> remainingL = new ArrayList<>(remaining);
+				remainingL.remove(nowMove);
+				int remainingSize = remainingL.size();
+				Piece[] remainingA = remainingL.toArray(new Piece[remainingSize]);
+				if (remainingSize == 0) {
+					remaining = ImmutableSet.of(MrX.MRX);
+				} else remaining = ImmutableSet.copyOf(remainingA);
+
+				Map<Ticket, Integer> addMrxTickets = new HashMap<>();
+				addMrxTickets.putAll(mrX.tickets());
+					addMrxTickets.put(((SingleMove) move).ticket, (int)addMrxTickets.get(((SingleMove) move).ticket) +1);
+
+				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(addMrxTickets), destinationOfMove);
+
+			}
+
+			return new MyGameState(setup, remaining, log, newMrx, newDet);
 		}
 
 		/**
