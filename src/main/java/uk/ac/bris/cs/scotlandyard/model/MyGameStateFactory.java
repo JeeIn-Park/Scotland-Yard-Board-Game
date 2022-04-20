@@ -8,6 +8,7 @@ import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 /**
@@ -60,6 +61,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return result;
         }
 
+		public Player getPlayerFromPiece(Piece piece){
+			Optional<Player> p = detectives.stream()
+					.filter(d -> d.piece().webColour().equals(piece))
+					.findFirst();
+			return p.get();
+		}
+
 		/**
 		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
 		 * chosen and supplied as the parameter
@@ -75,7 +83,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
 			Player newMrx = this.mrX;
-			List<Player> newDet = this.detectives;
+			List<Player> newDet = new ArrayList<>();
+			newDet.addAll(this.detectives);
 			Piece nowMove = move.commencedBy();
 			int fromHere = move.source();
 			int destinationOfMove = move.accept(new Visitor<Integer>() {
@@ -121,6 +130,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					remaining = ImmutableSet.of(MrX.MRX);
 				} else remaining = ImmutableSet.copyOf(remainingA);
 
+				detectives.contains(nowMove);
 				Map<Ticket, Integer> addMrxTickets = new HashMap<>();
 				addMrxTickets.putAll(mrX.tickets());
 					addMrxTickets.put(((SingleMove) move).ticket, (int)addMrxTickets.get(((SingleMove) move).ticket) +1);
@@ -168,12 +178,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					.findFirst();
 			ImmutableMap<Ticket, Integer> dt;
 			if (p.isEmpty()) return Optional.empty();
-			else {
-				dt = p.get().tickets();
+			else {dt = p.get().tickets();
 				return Optional.of(dt)
 						.map(tickets -> ticket -> dt.getOrDefault(ticket, 0));
 			}
 		}
+
 
 		/**
 		 * @return MrX's travel log as a list of {@link LogEntry}s.
