@@ -78,8 +78,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			Piece nowMove = move.commencedBy();
 			Player newMrx = this.mrX;
-			int fromHere = move.source();
-			int destinationOfMove = move.accept(new Visitor<Integer>() {
+			List<Player> newDetectives = new LinkedList<>(detectives);
+			int destinationOfMove = move.accept(new Visitor<>() {
 				@Override
 				public Integer visit(SingleMove move) {
 					return move.destination;}
@@ -90,23 +90,24 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			//when mrx moves
 			if(nowMove == mrX.piece()){
-				
+
 				Piece[] getPiece = new Piece[detectives.size()];
 				for (int i = 0; i < detectives.size(); i++) {
 					getPiece[i] = detectives.get(i).piece();
 				}
 				remaining = ImmutableSet.copyOf(getPiece);
-
+				Map<Ticket, Integer> mrxTickets = new HashMap<>();
+				mrxTickets.putAll(mrX.tickets());
 				if (move.getClass() == SingleMove.class){
-					newMrx = newMrx.use(((SingleMove) move).ticket);
-
+					mrxTickets.put(((SingleMove) move).ticket, (int)mrxTickets.get(((SingleMove) move).ticket) -1);
 				}
 				if (move.getClass() == DoubleMove.class){
-					newMrx = newMrx.use(((DoubleMove) move).ticket1);
-					newMrx = newMrx.use(((DoubleMove) move).ticket2);
+					mrxTickets.put(((DoubleMove) move).ticket1, (int)mrxTickets.get(((DoubleMove) move).ticket1) -1);
+					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
 				}
-				newMrx.location() = destinationOfMove;
+				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
 			}
+
 
 			//when detective moves
 			if(nowMove != mrX.piece()) {
@@ -119,11 +120,29 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					remaining = ImmutableSet.of(MrX.MRX);
 				} else remaining = ImmutableSet.copyOf(remainingA);
 
-				newMrx = mrX.give(move.tickets());
+				Map<Ticket, Integer> addMrxTickets = new HashMap<>();
+				addMrxTickets.putAll(mrX.tickets());
+				addMrxTickets.put(((SingleMove) move).ticket, (int) addMrxTickets.get(((SingleMove) move).ticket) + 1);
+				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(addMrxTickets), mrX.location());
+
+
+				Player player = null;
+				for (Player p : newDetectives) {
+					if (p.piece() == nowMove) {
+						player = p;
+						newDetectives.remove(p);
+					}
+				}
+
+				Map<Ticket, Integer> detTickets = new HashMap<>();
+				detTickets.putAll(player.tickets());
+				detTickets.put(((SingleMove) move).ticket, (int) detTickets.get(((SingleMove) move).ticket) - 1);
+
+				Player newDet = new Player(player.piece(), ImmutableMap.copyOf(detTickets), destinationOfMove);
+				newDetectives.add(newDet);
 
 			}
-
-			return new MyGameState(setup, remaining, log, newMrx, detectives);
+			return new MyGameState(setup, remaining, log, newMrx, newDetectives);
 		}
 
 		/**
