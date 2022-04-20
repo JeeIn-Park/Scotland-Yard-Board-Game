@@ -263,16 +263,19 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			for (int i = 0; i<detSingle2.size(); i++){
 				detMove2[i] = detSingleE2.next();
 			}
-
-			List<Move> detMove_ = new ArrayList<>();
-			Set<SingleMove> detSingle;
-			for (Set<SingleMove> singleMoves : detMove2) {
-				detSingle = singleMoves;
-				Iterator<SingleMove> detSingleE = detSingle.iterator();
-				detMove_.add(detSingleE.next());
+			Move[] detMove = new Move[detectiveMoveSize];
+			Set<SingleMove> detSingle = new HashSet<>();
+			int detMoveStorage = 0;
+			int for_detMoveStorage = 0;
+			for (int i = 0; i<detMove2.length; i++){
+				detSingle = detMove2[i];
+				detMoveStorage += for_detMoveStorage;
+				for (int k = detMoveStorage; k<detMove2[i].size() + detMoveStorage; k++){
+					Iterator<SingleMove> detSingleE = detSingle.iterator();
+					detMove[k] = detSingleE.next();
+					for_detMoveStorage ++;
+				}
 			}
-			int detMoveSize = detMove_.size();
-			Move[] detMove = detMove_.toArray(new Move[detMoveSize]);
 
 			if (remaining.contains(mrX.piece())) {return ImmutableSet.copyOf(mrxMove);}
 				else return ImmutableSet.copyOf(detMove);
