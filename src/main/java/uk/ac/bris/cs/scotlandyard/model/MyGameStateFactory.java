@@ -61,12 +61,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return result;
         }
 
-		public Player getPlayerFromPiece(Piece piece){
-			Optional<Player> p = detectives.stream()
-					.filter(d -> d.piece().webColour().equals(piece))
-					.findFirst();
-			return p.get();
-		}
 
 		/**
 		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
@@ -82,10 +76,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.moves = getAvailableMoves();
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
-			Player newMrx = this.mrX;
-			List<Player> newDet = new ArrayList<>();
-			newDet.addAll(this.detectives);
 			Piece nowMove = move.commencedBy();
+			Player newMrx = this.mrX;
 			int fromHere = move.source();
 			int destinationOfMove = move.accept(new Visitor<Integer>() {
 				@Override
@@ -105,19 +97,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 				remaining = ImmutableSet.copyOf(getPiece);
 
-				Map<Ticket, Integer> mrxTickets = new HashMap<>();
-				mrxTickets.putAll(mrX.tickets());
 				if (move.getClass() == SingleMove.class){
-					mrxTickets.put(((SingleMove) move).ticket, (int)mrxTickets.get(((SingleMove) move).ticket) -1);
+					newMrx = newMrx.use(((SingleMove) move).ticket);
+
 				}
 				if (move.getClass() == DoubleMove.class){
-					mrxTickets.put(((DoubleMove) move).ticket1, (int)mrxTickets.get(((DoubleMove) move).ticket1) -1);
-					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
+					newMrx = newMrx.use(((DoubleMove) move).ticket1);
+					newMrx = newMrx.use(((DoubleMove) move).ticket2);
 				}
-
-				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
+				newMrx.location() = destinationOfMove;
 			}
-
 
 			//when detective moves
 			if(nowMove != mrX.piece()) {
@@ -130,16 +119,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					remaining = ImmutableSet.of(MrX.MRX);
 				} else remaining = ImmutableSet.copyOf(remainingA);
 
-				detectives.contains(nowMove);
-				Map<Ticket, Integer> addMrxTickets = new HashMap<>();
-				addMrxTickets.putAll(mrX.tickets());
-					addMrxTickets.put(((SingleMove) move).ticket, (int)addMrxTickets.get(((SingleMove) move).ticket) +1);
-
-				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(addMrxTickets), mrX.location());
+				newMrx = mrX.give(move.tickets());
 
 			}
 
-			return new MyGameState(setup, remaining, log, newMrx, newDet);
+			return new MyGameState(setup, remaining, log, newMrx, detectives);
 		}
 
 		/**
@@ -274,6 +258,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
             return doubleMoveHashSet;
         }
+
 		/**
 		 * @return the current available moves of the game.
 		 * This is mutually exclusive with {@link #getWinner()}
