@@ -105,6 +105,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					mrxTickets.put(((DoubleMove) move).ticket1, (int)mrxTickets.get(((DoubleMove) move).ticket1) -1);
 					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
 				}
+
 				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
 			}
 
@@ -124,7 +125,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				addMrxTickets.putAll(mrX.tickets());
 					addMrxTickets.put(((SingleMove) move).ticket, (int)addMrxTickets.get(((SingleMove) move).ticket) +1);
 
-				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(addMrxTickets), destinationOfMove);
+				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(addMrxTickets), mrX.location());
 
 			}
 
