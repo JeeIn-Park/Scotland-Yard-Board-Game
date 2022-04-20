@@ -71,11 +71,28 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public GameState advance(Move move) throws IllegalArgumentException{
+			this.moves = getAvailableMoves();
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
-			ImmutableSet<Move> availableMoves = getAvailableMoves();
-			if (availableMoves.contains(move)) {
-				return build(setup, mrX, (ImmutableList<Player>) detectives);
-			} else throw new IllegalArgumentException();
+
+			Piece nowMove = move.commencedBy();
+
+			//when mrx moves
+			if(nowMove == mrX.piece()){
+				Piece[] getPiece = new Piece[detectives.size()];
+				for (int i = 0; i < detectives.size(); i++) {
+					getPiece[i] = detectives.get(i).piece();
+				}
+				remaining = ImmutableSet.copyOf(getPiece);
+			}
+
+			//when detective moves
+			List<Piece> remainingL = new ArrayList<>(remaining);
+			remainingL.remove(nowMove);
+			int remainingSize = remainingL.size();
+			Piece[] remainingA = remainingL.toArray(new Piece[remainingSize]);
+			remaining = ImmutableSet.copyOf(remainingA);
+
+			return new MyGameState(setup, remaining, log, mrX, detectives);
 		}
 
 		/**
@@ -162,10 +179,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 							// consider the rules of secret moves here
 							// add moves to the destination via a secret ticket if there are any left with the player
 							singleMoveHashSet.add( new SingleMove(player.piece(), source, Ticket.SECRET, destination));
-						}
-					}
-				}
-			}
+						}}}}
 			return singleMoveHashSet;
 		}
 
@@ -174,7 +188,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, mrX, source);
 			Iterator<SingleMove> firstMoveE = firstMoves.iterator();
 			if (mrX.has(Ticket.DOUBLE) && setup.moves.size()>1){
-
+				//TODO: change to log size
 			for (int i = 0; i<firstMoves.size(); i++) {
 				SingleMove firstMove = firstMoveE.next();
 				Ticket ticket1 = firstMove.ticket;
@@ -219,7 +233,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
-
 			//mrx
 			Set<SingleMove> mrxSingle = new HashSet<>();
 			mrxSingle = makeSingleMoves(setup, detectives, mrX, mrX.location());
@@ -251,24 +264,18 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				detMove2[i] = detSingleE2.next();
 			}
 
-			Move[] detMove = new Move[detectiveMoveSize];
-
-			Set<SingleMove> detSingle = new HashSet<>();
-			int detMoveStorage = 0;
-			int for_detMoveStorage = 0;
-			for (int i = 0; i<detMove2.length; i++){
-				detSingle = detMove2[i];
-				detMoveStorage += for_detMoveStorage;
-				for (int k = detMoveStorage; k<detMove2[i].size() + detMoveStorage; k++){
-					Iterator<SingleMove> detSingleE = detSingle.iterator();
-					detMove[k] = detSingleE.next();
-					for_detMoveStorage ++;
-				}
+			List<Move> detMove_ = new ArrayList<>();
+			Set<SingleMove> detSingle;
+			for (Set<SingleMove> singleMoves : detMove2) {
+				detSingle = singleMoves;
+				Iterator<SingleMove> detSingleE = detSingle.iterator();
+				detMove_.add(detSingleE.next());
 			}
+			int detMoveSize = detMove_.size();
+			Move[] detMove = detMove_.toArray(new Move[detMoveSize]);
 
-			//TODO: why doesn't contain detectives' move
-			ImmutableSet<Move> totalMove = ImmutableSet.copyOf(mrxMove);
-			return totalMove;
+			if (remaining.contains(mrX.piece())) {return ImmutableSet.copyOf(mrxMove);}
+				else return ImmutableSet.copyOf(detMove);
 
 		}
 	}
