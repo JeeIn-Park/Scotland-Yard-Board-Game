@@ -109,21 +109,18 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
 
-
 				if (move.getClass() == SingleMove.class){
 					if (setup.moves.get(advanceLog.size()))
 						advanceLog.add(LogEntry.reveal(((SingleMove) move).ticket, destinationOfMove));
 					else advanceLog.add(LogEntry.hidden(((SingleMove) move).ticket));
 				}
 				else if (move.getClass() == DoubleMove.class) {
-					if (setup.moves.get(advanceLog.size())){
+					if (setup.moves.get(advanceLog.size()))
 						advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket1, ((DoubleMove) move).destination1));
-						advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket2));}
-					else if (setup.moves.get(advanceLog.size()+1)){
-						advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket1));
-						advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));}
-					else {advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket1));
-						advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket2));}
+					else advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket1));
+					if (setup.moves.get(advanceLog.size()))
+							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));
+					else advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket2));
 					}
 				}
 
