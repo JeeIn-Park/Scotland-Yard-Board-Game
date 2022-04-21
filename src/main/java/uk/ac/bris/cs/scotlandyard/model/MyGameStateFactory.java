@@ -106,6 +106,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				if (move.getClass() == DoubleMove.class){
 					mrxTickets.put(((DoubleMove) move).ticket1, (int)mrxTickets.get(((DoubleMove) move).ticket1) -1);
 					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
+					mrxTickets.put(Ticket.DOUBLE, (int)mrxTickets.get(Ticket.DOUBLE) -1);
 				}
 				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
 
