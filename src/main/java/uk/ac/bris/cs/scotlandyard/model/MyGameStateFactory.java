@@ -93,21 +93,23 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 				Piece[] getPiece = new Piece[detectives.size()];
 				for (int i = 0; i < detectives.size(); i++) {
-					getPiece[i] = detectives.get(i).piece();
-				}
+					getPiece[i] = detectives.get(i).piece();}
 				remaining = ImmutableSet.copyOf(getPiece);
 
-				Map<Ticket, Integer> mrxTickets = new HashMap<>();
-				mrxTickets.putAll(mrX.tickets());
-				if (move.getClass() == SingleMove.class){
-					mrxTickets.put(((SingleMove) move).ticket, mrxTickets.get(((SingleMove) move).ticket) -1);
-				}
-				if (move.getClass() == DoubleMove.class){
-					mrxTickets.put(((DoubleMove) move).ticket1, mrxTickets.get(((DoubleMove) move).ticket1) -1);
-					mrxTickets.put(((DoubleMove) move).ticket2, mrxTickets.get(((DoubleMove) move).ticket2) -1);
-					mrxTickets.put(Ticket.DOUBLE, mrxTickets.get(Ticket.DOUBLE) -1);
-				}
-				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
+
+				Map<Ticket, Integer> mrxTickets = new HashMap<>(mrX.tickets());
+				newMrx = move.accept(new Visitor<>() {
+					@Override
+					public Player visit(SingleMove move) {
+						mrxTickets.put(move.ticket, mrxTickets.get(move.ticket) -1);
+						return new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);}
+					@Override
+					public Player visit(DoubleMove move) {
+						mrxTickets.put(move.ticket1, mrxTickets.get(move.ticket1) -1);
+						mrxTickets.put(move.ticket2, mrxTickets.get(move.ticket2) -1);
+						mrxTickets.put(Ticket.DOUBLE, mrxTickets.get(Ticket.DOUBLE) -1);
+						return new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);}});
+
 
 				if (move.getClass() == SingleMove.class){
 					if (setup.moves.get(advanceLog.size()))
