@@ -49,6 +49,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override public GameSetup getSetup() { return setup; }
 
 
+		public Piece[] getDetectivePieceArray() {
+			Piece[] getPiece = new Piece[detectives.size()];
+
+			for (int i = 0; i < detectives.size(); i++) {
+				getPiece[i] = detectives.get(i).piece();
+			}
+			return getPiece;
+		}
+
+
 		/**
 		 * @return all players in the game
 		 */
@@ -87,11 +97,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(move.commencedBy() == mrX.piece()){
 
 				//remaining
-				Piece[] getPiece = new Piece[detectives.size()];
-				for (int i = 0; i < detectives.size(); i++) {
-					getPiece[i] = detectives.get(i).piece();
-				}
-				remaining = ImmutableSet.copyOf(getPiece);
+				Piece[] r = getDetectivePieceArray();
+				remaining = ImmutableSet.copyOf(r);
 
 				//tickets, log
 				Map<Ticket, Integer> mrxTickets = new HashMap<>(mrX.tickets());
@@ -158,7 +165,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);
 		}
 
-		
+
 		/**
 		 * @param detective the detective
 		 * @return the location of the given detective; empty if the detective is not part of the game
@@ -207,9 +214,26 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 * @return the winner of this game; empty if the game has no winners yet
 		 * This is mutually exclusive with {@link #getAvailableMoves()}
 		 */
+
 		@Nonnull @Override
 		public ImmutableSet<Piece> getWinner() {
-			//TODO: testWinningPlayerIsEmptyInitially
+
+			//detectives
+			Piece[] detWin = getDetectivePieceArray();
+
+			for (Player p : detectives) {
+				if (p.location() == mrX.location()) return ImmutableSet.copyOf(detWin);
+
+
+					return detectives;
+			}
+
+
+				//mrx
+
+
+
+
 			return null;
 		}
 
@@ -238,11 +262,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return singleMoveS;
 		}
 
-        private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, List<Player> detectives, Player mrX, int source){
+        private static Set<DoubleMove> makeDoubleMoves(
+				GameSetup setup, List<Player> detectives, Player mrX, int source, ImmutableList<LogEntry> log){
 			HashSet<DoubleMove> doubleMoveS = new HashSet<>();
 			//check whether mrx has double ticket
-			if (mrX.has(Ticket.DOUBLE) && setup.moves.size()>1){
-				//TODO: change to log size
+			if (mrX.has(Ticket.DOUBLE) && setup.moves.size() - log.size() > 1){
 
 				//get required information of first move from makeSingleMove
 			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, mrX, source);
@@ -291,7 +315,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//mrx
 			if (remaining.contains(mrX.piece())) {
 				Set<SingleMove> mrxSingleS = new HashSet<>(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-				Set<DoubleMove> mrxDoubleS = new HashSet<>(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+				Set<DoubleMove> mrxDoubleS = new HashSet<>(makeDoubleMoves(setup, detectives, mrX, mrX.location(), this.log));
 				Move[] mrxMove = new Move[mrxSingleS.size() + mrxDoubleS.size()];
 
 				// single move
