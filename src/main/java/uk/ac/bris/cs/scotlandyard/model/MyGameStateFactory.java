@@ -2,6 +2,7 @@ package uk.ac.bris.cs.scotlandyard.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.checkerframework.checker.units.qual.A;
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
@@ -87,6 +88,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				public Integer visit(DoubleMove move) {
 					return move.destination2;}
 			});
+			List<LogEntry> advanceLog = new ArrayList<>(log);
 
 			//when mrx moves
 			if(nowMove == mrX.piece()){
@@ -106,8 +108,27 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
 				}
 				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
-			}
 
+
+				for (Integer r : ScotlandYard.REVEAL_MOVES){
+					if (move.getClass() == SingleMove.class){
+						if (r == advanceLog.size()+1){advanceLog.add(LogEntry.hidden(((SingleMove) move).ticket));}
+						else advanceLog.add(LogEntry.reveal(((SingleMove) move).ticket, destinationOfMove));
+					}
+					else if (move.getClass() == DoubleMove.class) {
+						if (r == advanceLog.size()+1){
+							advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket1));
+							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));}
+						else if (r == advanceLog.size()+2){
+							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket1, ((DoubleMove) move).destination1));
+							advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket2));}
+						else {advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket1, ((DoubleMove) move).destination1));
+							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));}
+					}
+				}
+
+				if(move.getClass() == DoubleMove.class){}
+			}
 
 			//when detective moves
 			if(nowMove != mrX.piece()) {
@@ -142,7 +163,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				newDetectives.add(newDet);
 
 			}
-			return new MyGameState(setup, remaining, log, newMrx, newDetectives);
+			return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);
 		}
 
 		/**
