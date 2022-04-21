@@ -112,22 +112,20 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 				for (Integer r : ScotlandYard.REVEAL_MOVES){
 					if (move.getClass() == SingleMove.class){
-						if (r == advanceLog.size()+1){advanceLog.add(LogEntry.hidden(((SingleMove) move).ticket));}
-						else advanceLog.add(LogEntry.reveal(((SingleMove) move).ticket, destinationOfMove));
+						if (r == advanceLog.size()+1){advanceLog.add(LogEntry.hidden(((SingleMove) move).ticket)); break;}
+						else {advanceLog.add(LogEntry.reveal(((SingleMove) move).ticket, destinationOfMove)); break;}
 					}
 					else if (move.getClass() == DoubleMove.class) {
 						if (r == advanceLog.size()+1){
 							advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket1));
-							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));}
+							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove)); break;}
 						else if (r == advanceLog.size()+2){
 							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket1, ((DoubleMove) move).destination1));
-							advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket2));}
+							advanceLog.add(LogEntry.hidden(((DoubleMove) move).ticket2));break;}
 						else {advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket1, ((DoubleMove) move).destination1));
-							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));}
+							advanceLog.add(LogEntry.reveal(((DoubleMove) move).ticket2, destinationOfMove));break;}
 					}
 				}
-
-				if(move.getClass() == DoubleMove.class){}
 			}
 
 			//when detective moves
