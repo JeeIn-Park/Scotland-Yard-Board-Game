@@ -145,19 +145,19 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(addMrxTickets), mrX.location());
 
 
-				Player player = null;
-				for (Player p : newDetectives) {
+				Map<Ticket, Integer> detTickets = new HashMap<>();
+				for (Player p : detectives) {
 					if (p.piece() == nowMove) {
+						Player player;
 						player = p;
 						newDetectives.remove(p);
+						detTickets.putAll(player.tickets());
+						detTickets.put(((SingleMove) move).ticket, (int) detTickets.get(((SingleMove) move).ticket) - 1);
 					}
 				}
 
-				Map<Ticket, Integer> detTickets = new HashMap<>();
-				detTickets.putAll(player.tickets());
-				detTickets.put(((SingleMove) move).ticket, (int) detTickets.get(((SingleMove) move).ticket) - 1);
 
-				Player newDet = new Player(player.piece(), ImmutableMap.copyOf(detTickets), destinationOfMove);
+				Player newDet = new Player(nowMove, ImmutableMap.copyOf(detTickets), destinationOfMove);
 				newDetectives.add(newDet);
 
 			}
