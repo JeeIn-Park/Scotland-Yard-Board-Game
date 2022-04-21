@@ -14,5 +14,6 @@ public final class MyModelFactory implements Factory<Model> {
 
 	@Nonnull @Override public Model build(GameSetup setup,
 	                                      Player mrX,
-	                                      ImmutableList<Player> detectives) {return null;}
+	                                      ImmutableList<Player> detectives) {
+		return null;}
 }

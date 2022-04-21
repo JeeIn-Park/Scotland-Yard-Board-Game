@@ -47,6 +47,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override public GameSetup getSetup() { return setup; }
 
+
 		/**
 		 * @return all players in the game
 		 */
@@ -54,12 +55,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public ImmutableSet<Piece> getPlayers() {
 			Piece[] getPiece = new Piece[detectives.size() + 1];
 			getPiece[0] = mrX.piece();
-
 			for (int i = 0; i < detectives.size(); i++) {
 				getPiece[i + 1] = detectives.get(i).piece();
 			}
-			ImmutableSet<Piece> result = ImmutableSet.copyOf(getPiece);
-			return result;
+			return ImmutableSet.copyOf(getPiece);
         }
 
 
@@ -77,39 +76,38 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.moves = getAvailableMoves();
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
-			Piece nowMove = move.commencedBy();
 			Player newMrx = this.mrX;
 			List<Player> newDetectives = new LinkedList<>(detectives);
+			List<LogEntry> advanceLog = new ArrayList<>(log);
 			int destinationOfMove = move.accept(new Visitor<>() {
 				@Override
 				public Integer visit(SingleMove move) {
 					return move.destination;}
 				@Override
 				public Integer visit(DoubleMove move) {
-					return move.destination2;}
-			});
-			List<LogEntry> advanceLog = new ArrayList<>(log);
+					return move.destination2;}});
+
 
 			//when mrx moves
-			if(nowMove == mrX.piece()){
+			if(move.commencedBy() == mrX.piece()){
 
 				Piece[] getPiece = new Piece[detectives.size()];
 				for (int i = 0; i < detectives.size(); i++) {
 					getPiece[i] = detectives.get(i).piece();
 				}
 				remaining = ImmutableSet.copyOf(getPiece);
+
 				Map<Ticket, Integer> mrxTickets = new HashMap<>();
 				mrxTickets.putAll(mrX.tickets());
 				if (move.getClass() == SingleMove.class){
-					mrxTickets.put(((SingleMove) move).ticket, (int)mrxTickets.get(((SingleMove) move).ticket) -1);
+					mrxTickets.put(((SingleMove) move).ticket, mrxTickets.get(((SingleMove) move).ticket) -1);
 				}
 				if (move.getClass() == DoubleMove.class){
-					mrxTickets.put(((DoubleMove) move).ticket1, (int)mrxTickets.get(((DoubleMove) move).ticket1) -1);
-					mrxTickets.put(((DoubleMove) move).ticket2, (int)mrxTickets.get(((DoubleMove) move).ticket2) -1);
-					mrxTickets.put(Ticket.DOUBLE, (int)mrxTickets.get(Ticket.DOUBLE) -1);
+					mrxTickets.put(((DoubleMove) move).ticket1, mrxTickets.get(((DoubleMove) move).ticket1) -1);
+					mrxTickets.put(((DoubleMove) move).ticket2, mrxTickets.get(((DoubleMove) move).ticket2) -1);
+					mrxTickets.put(Ticket.DOUBLE, mrxTickets.get(Ticket.DOUBLE) -1);
 				}
 				newMrx = new Player(mrX.piece(), ImmutableMap.copyOf(mrxTickets), destinationOfMove);
-
 
 				for (Integer r : ScotlandYard.REVEAL_MOVES){
 					if (move.getClass() == SingleMove.class){
@@ -130,10 +128,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 
 			//when detective moves
-			if(nowMove != mrX.piece()) {
+			if(move.commencedBy() != mrX.piece()) {
 
 				List<Piece> remainingL = new ArrayList<>(remaining);
-				remainingL.remove(nowMove);
+				remainingL.remove(move.commencedBy());
 				int remainingSize = remainingL.size();
 				Piece[] remainingA = remainingL.toArray(new Piece[remainingSize]);
 				if (remainingSize == 0) {
@@ -148,7 +146,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 				Map<Ticket, Integer> detTickets = new HashMap<>();
 				for (Player p : detectives) {
-					if (p.piece() == nowMove) {
+					if (p.piece() == move.commencedBy()) {
 						Player player;
 						player = p;
 						newDetectives.remove(p);
@@ -158,7 +156,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 
 
-				Player newDet = new Player(nowMove, ImmutableMap.copyOf(detTickets), destinationOfMove);
+				Player newDet = new Player(move.commencedBy(), ImmutableMap.copyOf(detTickets), destinationOfMove);
 				newDetectives.add(newDet);
 
 			}
@@ -171,15 +169,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
-			// For all detectives, if Detective#piece == detective,
-			// then return the location in an Optional.of();
+			// if Detective#piece == detective for all detectives, return the location in an Optional.of();
 			// otherwise, return Optional.empty();
-			String detectiveColour;
-			detectiveColour = detective.webColour();
 			Optional<Player> p = detectives.stream()
-					.filter(d -> d.piece().webColour().equals(detectiveColour))
+					.filter(d -> d.piece().webColour().equals(detective.webColour()))
 					.findFirst();
-				if (p.isEmpty()) return Optional.empty();
+			if (p.isEmpty()) return Optional.empty();
 				else return Optional.of(p.get().location());
 		}
 
@@ -194,17 +189,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if (piece == MrX.MRX) return Optional.of(xt)
 					.map(tickets -> ticket -> xt.getOrDefault(ticket, 0));
 
-			String detectiveColour;
-			detectiveColour = piece.webColour();
 			Optional<Player> p = detectives.stream()
-					.filter(d -> d.piece().webColour().equals(detectiveColour))
+					.filter(d -> d.piece().webColour().equals(piece.webColour()))
 					.findFirst();
 			ImmutableMap<Ticket, Integer> dt;
 			if (p.isEmpty()) return Optional.empty();
-			else {dt = p.get().tickets();
-				return Optional.of(dt)
-						.map(tickets -> ticket -> dt.getOrDefault(ticket, 0));
-			}
+			else { dt = p.get().tickets(); return Optional.of(dt)
+						.map(tickets -> ticket -> dt.getOrDefault(ticket, 0));}
 		}
 
 
@@ -226,35 +217,27 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 
 		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
-			//  create an empty collection of some sort, say, HashSet, to store all the SingleMove we generate
-            HashSet<SingleMove> singleMoveHashSet = new HashSet<>();
-
+            HashSet<SingleMove> singleMoveS = new HashSet<>();
             for(int destination : setup.graph.adjacentNodes(source)) {
-                //  find out if destination is occupied by a detective
-                //  if the location is occupied, don't add to the collection of moves to return
+                //  if destination is occupied by a detective, don't add to the collection of moves to return
 				boolean state = true;
-				for (int n = 0; n<detectives.size(); n++) {
-					if (destination == detectives.get(n).location()) state = false;
-				}
+				for (Player detective : detectives)
+					if (destination == detective.location()) { state = false; break; }
 				if (state) {
-					{
 						for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
-							//  find out if the player has the required tickets
-							//  if it does, construct a SingleMove and add it the collection of moves to return
-							if (player.has(t.requiredTicket())) {
-								singleMoveHashSet.add(new SingleMove(player.piece(), source, t.requiredTicket(), destination));
-							}
-						}
+							//  if the player has the required tickets, construct a SingleMove and add it the collection of moves to return
+							if (player.has(t.requiredTicket()))
+								singleMoveS.add(new SingleMove(player.piece(), source, t.requiredTicket(), destination));}
+
 						if (player.has(Ticket.SECRET)) {
-							// consider the rules of secret moves here
 							// add moves to the destination via a secret ticket if there are any left with the player
-							singleMoveHashSet.add( new SingleMove(player.piece(), source, Ticket.SECRET, destination));
-						}}}}
-			return singleMoveHashSet;
+							singleMoveS.add(new SingleMove(player.piece(), source, Ticket.SECRET, destination));}}}
+
+			return singleMoveS;
 		}
 
         private static Set<DoubleMove> makeDoubleMoves(GameSetup setup, List<Player> detectives, Player mrX, int source){
-            HashSet<DoubleMove> doubleMoveHashSet = new HashSet<>();
+            HashSet<DoubleMove> doubleMoveS = new HashSet<>();
 			Set<SingleMove> firstMoves = makeSingleMoves(setup, detectives, mrX, source);
 			Iterator<SingleMove> firstMoveE = firstMoves.iterator();
 			if (mrX.has(Ticket.DOUBLE) && setup.moves.size()>1){
@@ -265,37 +248,31 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				Ticket ticket2;
 				int destination1 = firstMove.destination;
 
-				//  find out if destination is occupied by a detective
-				//  if the location is occupied, don't add to the collection of moves to return
 				for (int destination2 : setup.graph.adjacentNodes(destination1)) {
 					boolean state = true;
-					for (int n = 0; n < detectives.size(); n++) {
-						if (destination2 == detectives.get(n).location()) state = false;
-					}
+					for (Player detective : detectives)
+						if (destination2 == detective.location()) { state = false; break; }
+					//  if destination is occupied by a detective, don't add to the collection of moves to return
+
 					if (state) {
 						for (Transport t : setup.graph.edgeValueOrDefault(destination1, destination2, ImmutableSet.of())) {
-							//  find out if the player has the required tickets
-							//  if it does, construct a SingleMove and add it the collection of moves to return
+							//  if the player has the required tickets, construct a DoubleMove and add it the collection of moves to return
 							ticket2 = t.requiredTicket();
 							if (mrX.has(ticket2)) {
-								if (ticket1 != ticket2) {
-									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, ticket2, destination2));
-								}
-								if (ticket1 == ticket2 & mrX.hasAtLeast(ticket1, 2)) {
-									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, ticket1, destination2));
-								}
+								if (ticket1 != ticket2)
+									doubleMoveS.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, ticket2, destination2));
+								else if ( mrX.hasAtLeast(ticket1, 2))
+									doubleMoveS.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, ticket1, destination2));
+
 								if (mrX.has(Ticket.SECRET)) {
-									// consider the rules of secret moves here
 									// add moves to the destination via a secret ticket if there are any left with the player
-									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, ticket2, destination2));
-									doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, Ticket.SECRET, destination2));
+									doubleMoveS.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, ticket2, destination2));
+									doubleMoveS.add(new DoubleMove(mrX.piece(), source, ticket1, destination1, Ticket.SECRET, destination2));
 
-									if (mrX.hasAtLeast(Ticket.SECRET, 2)) {
-										doubleMoveHashSet.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, Ticket.SECRET, destination2));
+									if (mrX.hasAtLeast(Ticket.SECRET, 2))
+										doubleMoveS.add(new DoubleMove(mrX.piece(), source, Ticket.SECRET, destination1, Ticket.SECRET, destination2));}}}}}}}
 
-									}}}}}}}}
-
-            return doubleMoveHashSet;
+            return doubleMoveS;
         }
 
 		/**
@@ -305,39 +282,31 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			//mrx
-			Set<SingleMove> mrxSingleS = new HashSet<>();
-			mrxSingleS = makeSingleMoves(setup, detectives, mrX, mrX.location());
-			Set<DoubleMove> mrxDoubleS = new HashSet<>();
-			mrxDoubleS = makeDoubleMoves(setup, detectives, mrX, mrX.location());
+			Set<SingleMove> mrxSingleS = new HashSet<>(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			Set<DoubleMove> mrxDoubleS = new HashSet<>(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 
 			Move[] mrxMove = new Move[mrxSingleS.size() + mrxDoubleS.size()];
 
 			Iterator<SingleMove> mrxSingleSE = mrxSingleS.iterator();
-			for (int i = 0; i<mrxSingleS.size(); i++){
-				mrxMove[i] = mrxSingleSE.next();
-			}
+			for (int i = 0; i<mrxSingleS.size(); i++) mrxMove[i] = mrxSingleSE.next();
 			Iterator<DoubleMove> mrxDoubleSE = mrxDoubleS.iterator();
-			for (int i = 0; i<mrxDoubleS.size(); i++){
-				mrxMove[mrxSingleS.size()+i] = mrxDoubleSE.next();
-			}
+			for (int i = 0; i<mrxDoubleS.size(); i++) mrxMove[mrxSingleS.size()+i] = mrxDoubleSE.next();
 
 			//detective
 			List<Set<SingleMove>> detSingleSL = new ArrayList<>();
-			List<SingleMove> detSingleL = new ArrayList<>();
-			for (Player d : detectives) {
-				if(remaining.contains(d.piece())) {
+
+			for (Player d : detectives)
+				if(remaining.contains(d.piece()))
 					detSingleSL.add(makeSingleMoves(setup, detectives, d, d.location()));
-				}
-			}
-			for ( Set<SingleMove> detSingleS : detSingleSL){
-				detSingleL.addAll(detSingleS);
-			}
+
+			List<SingleMove> detSingleL = new ArrayList<>();
+			for (Set<SingleMove> detSingleS : detSingleSL) detSingleL.addAll(detSingleS);
 			int detMoveSize = detSingleL.size();
+
 			Move[] detMove = detSingleL.toArray(new Move[detMoveSize]);
 
 			if (remaining.contains(mrX.piece())) {return ImmutableSet.copyOf(mrxMove);}
 				else return ImmutableSet.copyOf(detMove);
-
 		}
 	}
 
@@ -349,7 +318,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			Player mrX,
 			ImmutableList<Player> detectives) throws NullPointerException, IllegalArgumentException {
 
-		//check setup
+		//check graph
         if( setup.graph.nodes().isEmpty() ) throw new IllegalArgumentException();
 
 		//check mrX
@@ -357,28 +326,23 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		//check detectives
 		if (detectives == null) throw new NullPointerException();
-		Player detectiveCheck;
-		String[] detectiveColour = new String[6];
+		List<Piece> detectiveColour = new ArrayList<>();
+		List<Integer> detectiveLocation = new ArrayList<>();
 
-		int[] detectiveLocation = new int[6];
-		for (int i = 0; i<detectives.size(); i++) {
-			detectiveCheck = detectives.get(i);
-			if (detectiveCheck.has(Ticket.SECRET)) throw new IllegalArgumentException();
-			if (detectiveCheck.has(Ticket.DOUBLE)) throw new IllegalArgumentException();
+		for (Player d : detectives) {
+			if (d.has(Ticket.SECRET) || d.has(Ticket.DOUBLE))
+				throw new IllegalArgumentException();
 
-			detectiveColour[i] = detectiveCheck.piece().webColour();
-			for (int k = 0; k<i; k++) {
-				if (detectiveColour[k].equals(detectiveColour[i])) throw new IllegalArgumentException();
-			}
-			detectiveLocation[i] = detectiveCheck.location();
-			for (int k = 0; k<i; k++) {
-				if (detectiveLocation[k] == detectiveLocation[i]) throw new IllegalArgumentException();
-			}
+			if (detectiveColour.contains(d.piece()))
+				throw new IllegalArgumentException();
+			else detectiveColour.add(d.piece());
 
+			if (detectiveLocation.contains(d.location()))
+				throw new IllegalArgumentException();
+			else detectiveLocation.add(d.location());
 		}
 
 		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
-
 	}
 
 
