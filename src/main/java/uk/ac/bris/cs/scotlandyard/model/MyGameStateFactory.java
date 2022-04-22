@@ -95,6 +95,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			//when mrx moves
 			if(move.commencedBy() == mrX.piece()){
+				if (moves.isEmpty()) {return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives); }
 
 				//remaining
 				Piece[] r = getDetectivePieceArray();
@@ -133,6 +134,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			//when detective moves
 			if(move.commencedBy() != mrX.piece()) {
+				if (((SingleMove)move).destination == mrX.location()){
+					return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);
+				}
 
 				//remaining
 				List<Piece> remainingL = new ArrayList<>(remaining);
@@ -219,22 +223,23 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public ImmutableSet<Piece> getWinner() {
 
 			//detectives
+			//finish move on same station as Mrx
+			//no unoccupied stations for MrX travel to
+
 			Piece[] detWin = getDetectivePieceArray();
-
 			for (Player p : detectives) {
-				if (p.location() == mrX.location()) return ImmutableSet.copyOf(detWin);
+				if (p.location() == mrX.location()) {
+					return ImmutableSet.copyOf(detWin);
+				}
 
-
-					return detectives;
 			}
 
+			//mrx
+			//fill the log and detectives subsequently fail to catch him with their final moves
+			//detectives can no longer move any of their playing pieces
+			if (log.size() == setup.moves.size()) {return ImmutableSet.of(mrX.piece());}
 
-				//mrx
-
-
-
-
-			return null;
+				else return ImmutableSet.of(mrX.piece());
 		}
 
 
@@ -311,6 +316,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
+			if (remaining == null) { return ImmutableSet.of(); }
 
 			//mrx
 			if (remaining.contains(mrX.piece())) {
