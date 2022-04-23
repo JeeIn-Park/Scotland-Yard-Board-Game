@@ -114,9 +114,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//when mrx moves
 			if(move.commencedBy() == mrX.piece()){
 				if (moves.isEmpty()) {
-					winnerCode = 1;
-					ImmutableSet<Piece> victory = getWinner();
-					return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives, victory); }
+					winnerCode = 1; getWinner();
+					}
 
 				//remaining
 				Piece[] r = getDetectivePieceArray();
@@ -157,9 +156,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//when detective moves
 			if(move.commencedBy() != mrX.piece()) {
 				if (((SingleMove)move).destination == mrX.location()){
-					winnerCode = 1;
-					ImmutableSet<Piece> victory = getWinner();
-					return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives, victory);
+					winnerCode = 1; getWinner();
 				}
 
 				//remaining
@@ -169,9 +166,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				if (remainingL.size() == 0) {
 					remaining = ImmutableSet.of(MrX.MRX);
 					if (log.size() == setup.moves.size()) {
-						winnerCode = 2;
-						ImmutableSet<Piece> victory = getWinner();
-						return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives, victory);
+						winnerCode = 2; getWinner();
 					}
 				} else remaining = ImmutableSet.copyOf(remainingA);
 
@@ -195,7 +190,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				Player newDet = new Player(move.commencedBy(), ImmutableMap.copyOf(detTickets), ((SingleMove) move).destination);
 				newDetectives.add(newDet);
 			}
-			return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);
+			if(winnerCode == 0){
+				return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);}
+			else return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives, winner);
 		}
 
 
@@ -256,13 +253,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				winner = ImmutableSet.copyOf(detWin);
 				return winner;
 			}
-			if (winnerCode == 2) {
+			else if (winnerCode == 2) {
 				winner = ImmutableSet.of(mrX.piece());
 				return winner;
 			}
-
-
-			return ImmutableSet.of();
+			else return ImmutableSet.of();
 		}
 
 
