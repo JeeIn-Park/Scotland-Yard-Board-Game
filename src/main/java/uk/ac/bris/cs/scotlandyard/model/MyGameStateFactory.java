@@ -12,6 +12,8 @@ import java.util.*;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
+import static uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Ticket.*;
+
 
 /**
  * cw-model
@@ -26,7 +28,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private List<Player> detectives;
 		private ImmutableSet<Move> moves;
 		private ImmutableSet<Piece> winner;
-		private int winnerCode;
 
 		private MyGameState(
 				final GameSetup setup,
@@ -40,26 +41,46 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
+			this.winner = checkWinner();
 			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
 		}
 
+		private ImmutableSet<Piece> checkWinner() {
+			if (remaining.contains(mrX.piece())) {
+				if (getAvailableMoves().isEmpty()) {
+					remaining = null;
+					return ImmutableSet.copyOf(getDetectivePieceArray());
+				}
+				if (log.size() == setup.moves.size()){
+					remaining = null;
+					return ImmutableSet.of(mrX.piece());
+				}
+			}
 
-		private MyGameState(
-				final GameSetup setup,
-				final ImmutableSet<Piece> remaining,
-				final ImmutableList<LogEntry> log,
-				final Player mrX,
-				final List<Player> detectives,
-				final ImmutableSet<Piece> winner){
+			boolean state = true;
+			for (Player p : detectives) {
+				if (p.location() == mrX.location()){
+					remaining = null;
+					return ImmutableSet.copyOf(getDetectivePieceArray());
+				}
 
-			this.setup = setup;
-			this.remaining = remaining;
-			this.log = log;
-			this.mrX = mrX;
-			this.detectives = detectives;
-			this.winner = winner;
-			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
+				if (! p.tickets().equals(ImmutableMap.of(
+						TAXI, 0,
+						BUS, 0,
+						UNDERGROUND, 0,
+						Ticket.DOUBLE, 0,
+						Ticket.SECRET, 0))){
+					state = false;
+				}
+			}
+
+			if(state) {
+				remaining = null;
+				return ImmutableSet.of(mrX.piece());
+			}
+			return ImmutableSet.of();
 		}
+
 
 		/**
 		 * @return the current game setup
@@ -113,9 +134,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			//when mrx moves
 			if(move.commencedBy() == mrX.piece()){
-				if (moves.isEmpty()) {
-					winnerCode = 1; getWinner();
-					}
 
 				//remaining
 				Piece[] r = getDetectivePieceArray();
@@ -155,9 +173,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			//when detective moves
 			if(move.commencedBy() != mrX.piece()) {
-				if (((SingleMove)move).destination == mrX.location()){
-					winnerCode = 1; getWinner();
-				}
 
 				//remaining
 				List<Piece> remainingL = new ArrayList<>(remaining);
@@ -165,9 +180,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				Piece[] remainingA = remainingL.toArray(new Piece[0]);
 				if (remainingL.size() == 0) {
 					remaining = ImmutableSet.of(MrX.MRX);
-					if (log.size() == setup.moves.size()) {
-						winnerCode = 2; getWinner();
-					}
 				} else remaining = ImmutableSet.copyOf(remainingA);
 
 				//ticket
@@ -190,9 +202,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				Player newDet = new Player(move.commencedBy(), ImmutableMap.copyOf(detTickets), ((SingleMove) move).destination);
 				newDetectives.add(newDet);
 			}
-			if(winnerCode == 0){
-				return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);}
-			else return new MyGameState(setup, null, ImmutableList.copyOf(advanceLog), newMrx, newDetectives, winner);
+				return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);
 		}
 
 
@@ -246,18 +256,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 
 		@Nonnull @Override
-		public ImmutableSet<Piece> getWinner() {
-
-			Piece[] detWin = getDetectivePieceArray();
-			if (winnerCode == 1) {
-				winner = ImmutableSet.copyOf(detWin);
-				return winner;
-			}
-			else if (winnerCode == 2) {
-				winner = ImmutableSet.of(mrX.piece());
-				return winner;
-			}
-			else return ImmutableSet.of();
+		public ImmutableSet<Piece> getWinner() { 
+			return winner;
 		}
 
 
