@@ -46,11 +46,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		private ImmutableSet<Piece> checkWinner() {
+
 			if (remaining.contains(mrX.piece())) {
+
+				///if mrx cannot move
 				if (getAvailableMoves().isEmpty()) {
 					remaining = null;
-					return ImmutableSet.copyOf(getDetectivePieceArray());
+					return ImmutableSet.copyOf(getDetectivePieceArrayList());
 				}
+				//if mrx filled the log and it becomes mrx's turn again
 				if (log.size() == setup.moves.size()){
 					remaining = null;
 					return ImmutableSet.of(mrX.piece());
@@ -59,11 +63,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			boolean state = true;
 			for (Player p : detectives) {
+				// if detective catch mrx
 				if (p.location() == mrX.location()){
 					remaining = null;
-					return ImmutableSet.copyOf(getDetectivePieceArray());
+					return ImmutableSet.copyOf(getDetectivePieceArrayList());
 				}
 
+				// if there is at least one detective has tickets, state becomes false and skip to find winner
 				if (! p.tickets().equals(ImmutableMap.of(
 						TAXI, 0,
 						BUS, 0,
@@ -78,9 +84,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				remaining = null;
 				return ImmutableSet.of(mrX.piece());
 			}
+
 			return ImmutableSet.of();
 		}
-
 
 		/**
 		 * @return the current game setup
@@ -88,12 +94,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull @Override public GameSetup getSetup() { return setup; }
 
 
-		public Piece[] getDetectivePieceArray() {
-			Piece[] getPiece = new Piece[detectives.size()];
+		public List<Piece> getDetectivePieceArrayList() {
+			List<Piece> getPiece = new ArrayList<>();
 
-			for (int i = 0; i < detectives.size(); i++) {
-				getPiece[i] = detectives.get(i).piece();
+			for (Player d : detectives) {
+				getPiece.add(d.piece());
 			}
+
 			return getPiece;
 		}
 
@@ -136,7 +143,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(move.commencedBy() == mrX.piece()){
 
 				//remaining
-				Piece[] r = getDetectivePieceArray();
+				List<Piece> r = getDetectivePieceArrayList();
+				for (Player p : detectives) {
+					if (p.tickets().equals(ImmutableMap.of( TAXI, 0, BUS, 0, UNDERGROUND, 0, Ticket.DOUBLE, 0, Ticket.SECRET, 0))){
+						r.remove(p.piece());
+					}
+				}
 				remaining = ImmutableSet.copyOf(r);
 
 				//tickets, log
@@ -177,10 +189,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				//remaining
 				List<Piece> remainingL = new ArrayList<>(remaining);
 				remainingL.remove(move.commencedBy());
-				Piece[] remainingA = remainingL.toArray(new Piece[0]);
-				if (remainingL.size() == 0) {
+				if (remainingL.isEmpty()) {
 					remaining = ImmutableSet.of(MrX.MRX);
-				} else remaining = ImmutableSet.copyOf(remainingA);
+				} else remaining = ImmutableSet.copyOf(remainingL);
 
 				//ticket
 				Map<Ticket, Integer> addMrxTickets = new HashMap<>();
@@ -343,6 +354,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				Set<DoubleMove> mrxDoubleS = new HashSet<>(makeDoubleMoves(setup, detectives, mrX, mrX.location(), this.log));
 				Move[] mrxMove = new Move[mrxSingleS.size() + mrxDoubleS.size()];
 
+
 				// single move
 				Iterator<SingleMove> mrxSingleSE = mrxSingleS.iterator();
 				for (int i = 0; i < mrxSingleS.size(); i++) {
@@ -373,8 +385,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					detSingleL.addAll(detSingleS);
 				}
 
-				Move[] detMove = detSingleL.toArray(new Move[0]);
-				return ImmutableSet.copyOf(detMove);
+				return ImmutableSet.copyOf(detSingleL);
 			}
 		}
 	}
