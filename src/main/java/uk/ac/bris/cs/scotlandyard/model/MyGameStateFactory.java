@@ -1,4 +1,5 @@
 package uk.ac.bris.cs.scotlandyard.model;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -15,10 +16,7 @@ import javax.annotation.Nonnull;
 import static uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Ticket.*;
 
 
-/**
- * cw-model
- * Stage 1: Complete this class
- */
+
 public final class MyGameStateFactory implements Factory<GameState> {
 	private final class MyGameState implements GameState {
 		private GameSetup setup;
@@ -88,10 +86,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return ImmutableSet.of();
 		}
 
-		/**
-		 * @return the current game setup
-		 */
+
+
 		@Nonnull @Override public GameSetup getSetup() { return setup; }
+
 
 
 		public List<Piece> getDetectivePieceArrayList() {
@@ -105,9 +103,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-		/**
-		 * @return all players in the game
-		 */
+
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
 
@@ -121,15 +117,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
         }
 
 
-		/**
-		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
-		 * chosen and supplied as the parameter
-		 *
-		 * @param move the move to make
-		 * @return the game state of which the given move has been made
-		 * @throws IllegalArgumentException if the move was not a move from
-		 *                                  {@link #getAvailableMoves()}
-		 */
+
 		@Nonnull @Override
 		public GameState advance(Move move) throws IllegalArgumentException{
 			this.moves = getAvailableMoves();
@@ -217,10 +205,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-		/**
-		 * @param detective the detective
-		 * @return the location of the given detective; empty if the detective is not part of the game
-		 */
+
 		@Nonnull @Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
 			// if Detective#piece == detective for all detectives, return the location in an Optional.of();
@@ -233,10 +218,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-		/**
-		 * @param piece the player piece
-		 * @return the ticket board of the given player; empty if the player is not part of the game
-		 */
+
 		@Nonnull @Override
 		public Optional<Board.TicketBoard> getPlayerTickets(Piece piece) {
 			ImmutableMap<Ticket, Integer> xt;
@@ -254,17 +236,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-		/**
-		 * @return MrX's travel log as a list of {@link LogEntry}s.
-		 */
+
 		@Nonnull @Override
 		public ImmutableList<LogEntry> getMrXTravelLog() {return log;}
 
 
-		/**
-		 * @return the winner of this game; empty if the game has no winners yet
-		 * This is mutually exclusive with {@link #getAvailableMoves()}
-		 */
 
 		@Nonnull @Override
 		public ImmutableSet<Piece> getWinner() { 
@@ -296,6 +272,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 			return singleMoveS;
 		}
+
+
 
         private static Set<DoubleMove> makeDoubleMoves(
 				GameSetup setup, List<Player> detectives, Player mrX, int source, ImmutableList<LogEntry> log){
@@ -340,10 +318,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
             return doubleMoveS;
         }
 
-		/**
-		 * @return the current available moves of the game.
-		 * This is mutually exclusive with {@link #getWinner()}
-		 */
+
+
 		@Nonnull @Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			if (remaining == null) { return ImmutableSet.of(); }
@@ -390,9 +366,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 	}
 
-	/**
-	 * @return a new instance of GameState.
-	 */
+
+
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
