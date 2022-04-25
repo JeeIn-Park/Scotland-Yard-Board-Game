@@ -3,14 +3,13 @@ package uk.ac.bris.cs.scotlandyard.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.checkerframework.checker.units.qual.A;
+
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
 
 import java.util.*;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 import static uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Ticket.*;
@@ -46,7 +45,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableSet<Piece> checkWinner() {
 
 			if (remaining.contains(mrX.piece())) {
-
 				///if mrx cannot move
 				if (getAvailableMoves().isEmpty()) {
 					remaining = null;
@@ -66,7 +64,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					remaining = null;
 					return ImmutableSet.copyOf(getDetectivePieceArrayList());
 				}
-
 				// if there is at least one detective has tickets, state becomes false and skip to find winner
 				if (! p.tickets().equals(ImmutableMap.of(
 						TAXI, 0,
@@ -77,7 +74,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					state = false;
 				}
 			}
-
 			if(state) {
 				remaining = null;
 				return ImmutableSet.of(mrX.piece());
@@ -87,9 +83,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-
 		@Nonnull @Override public GameSetup getSetup() { return setup; }
-
 
 
 		public List<Piece> getDetectivePieceArrayList() {
@@ -103,7 +97,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
 
@@ -115,7 +108,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 			return ImmutableSet.copyOf(getPiece);
         }
-
 
 
 		@Nonnull @Override
@@ -205,7 +197,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-
 		@Nonnull @Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
 			// if Detective#piece == detective for all detectives, return the location in an Optional.of();
@@ -216,7 +207,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if (p.isEmpty()) return Optional.empty();
 				else return Optional.of(p.get().location());
 		}
-
 
 
 		@Nonnull @Override
@@ -236,17 +226,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
-
 		@Nonnull @Override
 		public ImmutableList<LogEntry> getMrXTravelLog() {return log;}
-
 
 
 		@Nonnull @Override
 		public ImmutableSet<Piece> getWinner() { 
 			return winner;
 		}
-
 
 
 		private static Set<SingleMove> makeSingleMoves(GameSetup setup, List<Player> detectives, Player player, int source){
@@ -272,7 +259,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 			return singleMoveS;
 		}
-
 
 
         private static Set<DoubleMove> makeDoubleMoves(
@@ -317,7 +303,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
             return doubleMoveS;
         }
-
 
 
 		@Nonnull @Override
@@ -365,7 +350,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 		}
 	}
-
 
 
 	@Nonnull @Override public GameState build(
