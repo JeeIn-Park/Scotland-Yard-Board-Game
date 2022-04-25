@@ -5,24 +5,35 @@ import com.google.common.collect.ImmutableSet;
 
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Factory;
 
+import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
+import uk.ac.bris.cs.scotlandyard.model.Move.*;
+import uk.ac.bris.cs.scotlandyard.model.Piece.*;
+import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
+
 import java.util.*;
 import javax.annotation.Nonnull;
 
 
 public final class MyModelFactory implements Factory<Model> {
 	private final class MyModel implements Model{
-		private Board board;
+		private GameState game;
 		private List<Observer> observers;
 
-		private MyModel(){
+		private MyModel(
+				final GameSetup setup,
+				final Player mrX,
+				final List<Player> detectives){
+
 			this.observers = new ArrayList<>();
+			this.game = new MyGameStateFactory().build(setup, mrX, ImmutableList.copyOf(detectives));
+
 		}
 
 
 
 		@Nonnull @Override
 		public Board getCurrentBoard() {
-			return this.board;}
+			return this.game;}
 
 
 
@@ -50,15 +61,21 @@ public final class MyModelFactory implements Factory<Model> {
 		 * @param move delegates the move to the underlying
 		 * {@link uk.ac.bris.cs.scotlandyard.model.Board.GameState}
 		 */
-		@Override
-		public void chooseMove(@Nonnull Move move) {
 
+		@Override public void chooseMove(@Nonnull Move move){
+			game = game.advance(move);
+			Observer.Event e = Observer.Event.GAME_OVER;
+			if (game.getWinner().isEmpty()) { e = Observer.Event.MOVE_MADE;}
+
+			for (Observer o : observers){
+				o.onModelChanged(getCurrentBoard(), e);
+			}
 		}
 	}
 
 	@Nonnull @Override public Model build(GameSetup setup,
 	                                      Player mrX,
 	                                      ImmutableList<Player> detectives) {
-		return new MyModel();}
+		return new MyModel(setup, mrX, detectives);}
 
 }
