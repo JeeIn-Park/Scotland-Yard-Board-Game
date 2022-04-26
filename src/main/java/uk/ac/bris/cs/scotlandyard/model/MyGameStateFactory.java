@@ -18,13 +18,13 @@ import static uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Ticket.*;
 
 public final class MyGameStateFactory implements Factory<GameState> {
 	private final class MyGameState implements GameState {
-		private GameSetup setup;
+		private final GameSetup setup;
 		private ImmutableSet<Piece> remaining;
-		private ImmutableList<LogEntry> log;
-		private Player mrX;
-		private List<Player> detectives;
+		private final ImmutableList<LogEntry> log;
+		private final Player mrX;
+		private final List<Player> detectives;
 		private ImmutableSet<Move> moves;
-		private ImmutableSet<Piece> winner;
+		private final ImmutableSet<Piece> winner;
 
 		private MyGameState(
 				final GameSetup setup,
@@ -42,15 +42,20 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(setup.moves.isEmpty()) throw new IllegalArgumentException("Moves is empty!");
 		}
 
+		/**
+		 * Computes whether game is over or not. If game is over, set remaining to null.
+		 *
+		 * @return the winner of this game; empty if the game is not over
+		 */
 		private ImmutableSet<Piece> checkWinner() {
 
 			if (remaining.contains(mrX.piece())) {
-				///if mrx cannot move
+				// MrX is cornered by detectives
 				if (getAvailableMoves().isEmpty()) {
 					remaining = null;
 					return ImmutableSet.copyOf(getDetectivePieceArrayList());
 				}
-				//if mrx filled the log and it becomes mrx's turn again
+				// MrX filled the log and subsequently all detectives failed to catch him
 				if (log.size() == setup.moves.size()){
 					remaining = null;
 					return ImmutableSet.of(mrX.piece());
@@ -59,12 +64,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 			boolean state = true;
 			for (Player p : detectives) {
-				// if detective catch mrx
+				// detective catches mrx
 				if (p.location() == mrX.location()){
 					remaining = null;
 					return ImmutableSet.copyOf(getDetectivePieceArrayList());
 				}
-				// if there is at least one detective has tickets, state becomes false and skip to find winner
+				// all detectives used given ticket, so they cannot move anymore
 				if (! p.tickets().equals(ImmutableMap.of(
 						TAXI, 0,
 						BUS, 0,
@@ -83,9 +88,19 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
+
+		/**
+		 * @return the current game setup
+		 */
 		@Nonnull @Override public GameSetup getSetup() { return setup; }
 
 
+
+		/**
+		 * Get a list of detectives as a list of {@link Player}s and computes piece of them.
+		 *
+		 * @return the detectives as a list of {@link Piece}s.
+		 */
 		public List<Piece> getDetectivePieceArrayList() {
 			List<Piece> getPiece = new ArrayList<>();
 
@@ -97,6 +112,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 
+
+		/**
+		 * @return all players in the game as a set of {@link Piece}s.
+		 */
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
 
@@ -110,6 +129,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
         }
 
 
+
+		/**
+		 * Computes the next game state given a move from {@link #getAvailableMoves()} has been
+		 * chosen and supplied as the parameter
+		 *
+		 * @param move the move to make
+		 * @return the game state of which the given move has been made
+		 * @throws IllegalArgumentException if the move was not a move from {@link #getAvailableMoves()}
+		 */
 		@Nonnull @Override
 		public GameState advance(Move move) throws IllegalArgumentException{
 			this.moves = getAvailableMoves();
@@ -122,7 +150,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//when mrx moves
 			if(move.commencedBy() == mrX.piece()){
 
-				//remaining
+				//set remaining with detectives
 				List<Piece> r = getDetectivePieceArrayList();
 				for (Player p : detectives) {
 					if (p.tickets().equals(ImmutableMap.of( TAXI, 0, BUS, 0, UNDERGROUND, 0, Ticket.DOUBLE, 0, Ticket.SECRET, 0))){
@@ -131,7 +159,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 				remaining = ImmutableSet.copyOf(r);
 
-				//tickets, log
+				//use tickets and decrement used ticket count
+				//add log according to given move
 				Map<Ticket, Integer> mrxTickets = new HashMap<>(mrX.tickets());
 				newMrx = move.accept(new Visitor<>() {
 					@Override
