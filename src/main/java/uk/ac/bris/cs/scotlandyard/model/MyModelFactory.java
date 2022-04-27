@@ -71,6 +71,7 @@ public final class MyModelFactory implements Factory<Model> {
 			return ImmutableSet.copyOf(observers);}
 
 
+
 		/**
 		 * @param move delegates the move to the underlying
 		 * {@link uk.ac.bris.cs.scotlandyard.model.Board.GameState}
