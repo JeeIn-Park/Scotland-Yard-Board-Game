@@ -26,11 +26,21 @@ public final class MyModelFactory implements Factory<Model> {
 		}
 
 
+		/**
+		 * @return the current game board
+		 */
 		@Nonnull @Override
 		public Board getCurrentBoard() {
 			return this.game;}
 
 
+
+		/**
+		 * Registers an observer to the model. It is an error to register the same observer more than
+		 * once.
+		 *
+		 * @param observer the observer to register
+		 */
 		@Override
 		public void registerObserver(Observer observer) throws NullPointerException, IllegalArgumentException {
 			if(observer == null) {throw new NullPointerException();}
@@ -38,6 +48,13 @@ public final class MyModelFactory implements Factory<Model> {
 			observers.add(observer);}
 
 
+
+		/**
+		 * Unregisters an observer to the model. It is an error to unregister an observer not
+		 * previously registered with {@link #registerObserver(Observer)}.
+		 *
+		 * @param observer the observer to register
+		 */
 		@Override
 		public void unregisterObserver(Observer observer) throws NullPointerException, IllegalArgumentException{
 			if(observer == null) {throw new NullPointerException();}
@@ -45,11 +62,19 @@ public final class MyModelFactory implements Factory<Model> {
 			observers.remove(observer);}
 
 
+
+		/**
+		 * @return all currently registered observers of the model
+		 */
 		@Nonnull @Override
 		public ImmutableSet<Observer> getObservers() {
 			return ImmutableSet.copyOf(observers);}
 
 
+		/**
+		 * @param move delegates the move to the underlying
+		 * {@link uk.ac.bris.cs.scotlandyard.model.Board.GameState}
+		 */
 		@Override public void chooseMove(@Nonnull Move move){
 			game = game.advance(move);
 			Observer.Event e = Observer.Event.GAME_OVER;
@@ -62,6 +87,14 @@ public final class MyModelFactory implements Factory<Model> {
 
 	}
 
+	/**
+	 * call {@link MyModel} constructor
+	 *
+	 * @param setup the game setup
+	 * @param mrX MrX player
+	 * @param detectives detective players
+	 * @return Model from calling {@link MyModel} constructor
+	 */
 	@Nonnull @Override public Model build(GameSetup setup,
 	                                      Player mrX,
 	                                      ImmutableList<Player> detectives) {
