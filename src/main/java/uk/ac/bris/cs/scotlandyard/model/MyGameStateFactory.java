@@ -119,13 +119,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		 */
 		@Nonnull @Override
 		public ImmutableSet<Piece> getPlayers() {
+			List<Piece> getPiece = new ArrayList<>();
+			getPiece.add(mrX.piece());
+			getPiece.addAll(getDetectivePieceArrayList());
 
-			Piece[] getPiece = new Piece[detectives.size() + 1];
-			getPiece[0] = mrX.piece();
-
-			for (int i = 0; i < detectives.size(); i++) {
-				getPiece[i + 1] = detectives.get(i).piece();
-			}
 			return ImmutableSet.copyOf(getPiece);
         }
 
