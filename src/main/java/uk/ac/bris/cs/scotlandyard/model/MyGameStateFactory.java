@@ -227,7 +227,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				return new MyGameState(setup, remaining, ImmutableList.copyOf(advanceLog), newMrx, newDetectives);
 		}
 
-
+		/**
+		 * @param piece the piece of detective
+		 * @return the specific detective in detectives list
+		 */
+		public Optional<Player> findSpecificDetective (Piece piece){
+			Optional<Player> p = detectives.stream()
+					.filter(d -> d.piece().webColour().equals(piece.webColour()))
+					.findFirst();
+			return p;
+		}
 
 		/**
 		 * @param detective the detective
@@ -237,9 +246,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
 			// if Detective#piece == detective for all detectives, return the location in an Optional.of();
 			// otherwise, return Optional.empty();
-			Optional<Player> p = detectives.stream()
-					.filter(d -> d.piece().webColour().equals(detective.webColour()))
-					.findFirst();
+			Optional<Player> p = findSpecificDetective(detective);
 			if (p.isEmpty()) return Optional.empty();
 				else return Optional.of(p.get().location());
 		}
@@ -258,9 +265,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					.map(tickets -> ticket -> mrX.tickets().getOrDefault(ticket, 0));
 
 			// Tickets of detective
-			Optional<Player> p = detectives.stream()
-					.filter(d -> d.piece().webColour().equals(piece.webColour()))
-					.findFirst();
+			Optional<Player> p = findSpecificDetective(piece);
 			if (p.isEmpty()) return Optional.empty();
 			else { return Optional.of(p.get().tickets())
 						.map(tickets -> ticket -> p.get().tickets().getOrDefault(ticket, 0));}
