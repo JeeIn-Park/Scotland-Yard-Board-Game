@@ -2,9 +2,11 @@
 
 Welcome to the Scotland Yard Board Game project! This repository contains the source code for an interactive digital version of the classic board game "Scotland Yard." Follow the instructions below to set up your development environment and run the game.
 
+
 ## About the Game
 
 **Scotland Yard** is a popular detective board game where players take on the roles of detectives attempting to capture Mr. X, a fugitive who moves secretly across the board. The game involves strategy, deduction, and a bit of luck. This digital version aims to capture the essence of the classic game with enhanced graphics and user interface.
+
 
 ## Prerequisites
 
@@ -25,6 +27,7 @@ To run and develop this project, you need the following software:
 1. **Download and Install Java JDK:**
    - Download the latest version of Java from the [official website](https://www.java.com/en/).
    - **Important:** Ensure that the JDK version is correctly set in IntelliJ IDEA. Navigate to `File > Project Structure > Project Settings > Project > SDK` and configure the correct version.
+
 
 ## Setting Up the Project
 
@@ -52,9 +55,11 @@ To run and develop this project, you need the following software:
    - Open `Main.java` in IntelliJ IDEA.
    - Click the `Run` button (green play button) to execute the program.
 
+
 ## Playing the Game
 
 Once the program is running, you will be able to interact with the digital version of Scotland Yard. Follow the on-screen instructions to start a new game and enjoy!
+
 
 ## Troubleshooting
 
@@ -75,5 +80,22 @@ Contributions to the project are welcome. Please follow the standard GitHub work
 3. Submit a pull request with a description of your modifications.
 
 ---
+
+
+## Understanding the Project
+
+For those interested in diving deeper into the project, here are some useful resources and documentation:
+
+- **Project API Documentation:**
+  - Review the detailed API documentation for the Scotland Yard project [here](https://seis.bristol.ac.uk/~sh1670/SY/apidocs2022/index.html). This documentation provides an overview of the functions and classes used in the project.
+
+- **Guava Library Documentation:**
+  - **Graphs Explained:** Learn about the `Graph` and `ValueGraph` data structures from the Guava library [here](https://github.com/google/guava/wiki/GraphsExplained#valuegraph).
+  - **Immutable Collections Explained:** Explore the immutable collections provided by Guava [here](https://github.com/google/guava/wiki/ImmutableCollectionsExplained).
+
+These resources will help you understand the codebase, the functionality of various components, and how to use advanced data structures effectively.
+
+
+
 
 Thank you for your interest in Scotland Yard! Enjoy your game and happy coding!
