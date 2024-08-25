@@ -3,7 +3,7 @@
 Welcome to the Scotland Yard Board Game project! This repository contains the source code for an interactive digital version of the classic board game "Scotland Yard." Follow the instructions below to set up your development environment and run the game.
 
 - **Game Main Screen:**
-  ![Game Main Screen](./doc/screenshots/Screenshot%20from%202024-08-25%2013-33-50.png)
+  ![Game Main Screen](./doc/Screenshot%20from%202024-08-25%2013-33-50.png)
 
 
 ## About the Game
@@ -11,7 +11,7 @@ Welcome to the Scotland Yard Board Game project! This repository contains the so
 **Scotland Yard** is a classic detective board game where players assume the roles of detectives trying to capture Mr. X, a fugitive who moves secretly across the board. The game involves strategy, deduction, and a bit of luck. This digital version aims to capture the essence of the classic game with enhanced graphics and a modern user interface.
 
 - **Game In Progress:**
-  ![Game Map In The Game Progress](./doc/screenshots/Screenshot%20from%202024-08-25%2013-34-01.png)
+  ![Game Map In The Game Progress](./doc/Screenshot%20from%202024-08-25%2013-34-01.png)
 
 
 ## Game Rules and Information
@@ -74,7 +74,7 @@ To run and develop this project, you need the following software:
 Once the program is running, you will be able to interact with the digital version of Scotland Yard. Follow the on-screen instructions to start a new game and enjoy!
 
 - **End Game Screen:**
-  ![The Game Screen](./doc/screenshots/Screenshot%20from%202024-08-25%2013-34-18.png)
+  ![The Game Screen](./doc/Screenshot%20from%202024-08-25%2013-34-18.png)
 
   
 ## Troubleshooting
