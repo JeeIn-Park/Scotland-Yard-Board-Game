@@ -8,6 +8,16 @@ Welcome to the Scotland Yard Board Game project! This repository contains the so
 **Scotland Yard** is a popular detective board game where players take on the roles of detectives attempting to capture Mr. X, a fugitive who moves secretly across the board. The game involves strategy, deduction, and a bit of luck. This digital version aims to capture the essence of the classic game with enhanced graphics and user interface.
 
 
+## Game Rules and Information
+
+**Scotland Yard** is a classic detective board game where players collaborate to track down Mr. X. For a deeper understanding of the game's rules and historical context, refer to these resources:
+
+- **Official Rulebook:** [Scotland Yard Official Rulebook](https://init-games.blogspot.com/2020/02/scotland-yard-1983.html)
+- **Wikipedia Overview:** [Scotland Yard (board game) on Wikipedia](https://en.wikipedia.org/wiki/Scotland_Yard_(board_game))
+
+These links provide comprehensive information about the game's rules, history, and variations.
+
+
 ## Prerequisites
 
 To run and develop this project, you need the following software:
@@ -71,6 +81,7 @@ If you encounter any issues or errors:
 
 For further assistance, please consult the documentation or reach out to the project maintainers.
 
+
 ## Contributing
 
 Contributions to the project are welcome. Please follow the standard GitHub workflow:
@@ -95,6 +106,7 @@ For those interested in diving deeper into the project, here are some useful res
 
 These resources will help you understand the codebase, the functionality of various components, and how to use advanced data structures effectively.
 
+---
 
 
 
