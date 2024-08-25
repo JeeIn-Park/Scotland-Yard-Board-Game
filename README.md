@@ -2,21 +2,18 @@
 
 Welcome to the Scotland Yard Board Game project! This repository contains the source code for an interactive digital version of the classic board game "Scotland Yard." Follow the instructions below to set up your development environment and run the game.
 
-
 ## About the Game
 
-**Scotland Yard** is a popular detective board game where players take on the roles of detectives attempting to capture Mr. X, a fugitive who moves secretly across the board. The game involves strategy, deduction, and a bit of luck. This digital version aims to capture the essence of the classic game with enhanced graphics and user interface.
-
+**Scotland Yard** is a classic detective board game where players assume the roles of detectives trying to capture Mr. X, a fugitive who moves secretly across the board. The game involves strategy, deduction, and a bit of luck. This digital version aims to capture the essence of the classic game with enhanced graphics and a modern user interface.
 
 ## Game Rules and Information
 
-**Scotland Yard** is a classic detective board game where players collaborate to track down Mr. X. For a deeper understanding of the game's rules and historical context, refer to these resources:
+To understand the game's rules and historical context, refer to the following resources:
 
 - **Official Rulebook:** [Scotland Yard Official Rulebook](https://init-games.blogspot.com/2020/02/scotland-yard-1983.html)
 - **Wikipedia Overview:** [Scotland Yard (board game) on Wikipedia](https://en.wikipedia.org/wiki/Scotland_Yard_(board_game))
 
 These links provide comprehensive information about the game's rules, history, and variations.
-
 
 ## Prerequisites
 
@@ -37,7 +34,6 @@ To run and develop this project, you need the following software:
 1. **Download and Install Java JDK:**
    - Download the latest version of Java from the [official website](https://www.java.com/en/).
    - **Important:** Ensure that the JDK version is correctly set in IntelliJ IDEA. Navigate to `File > Project Structure > Project Settings > Project > SDK` and configure the correct version.
-
 
 ## Setting Up the Project
 
@@ -65,11 +61,9 @@ To run and develop this project, you need the following software:
    - Open `Main.java` in IntelliJ IDEA.
    - Click the `Run` button (green play button) to execute the program.
 
-
 ## Playing the Game
 
 Once the program is running, you will be able to interact with the digital version of Scotland Yard. Follow the on-screen instructions to start a new game and enjoy!
-
 
 ## Troubleshooting
 
@@ -79,8 +73,7 @@ If you encounter any issues or errors:
 - Verify that JavaFX libraries are properly added to your project.
 - Check that the correct version of Java is set in IntelliJ IDEA.
 
-For further assistance, please consult the documentation or reach out to the project maintainers.
-
+For further assistance, consult the documentation or reach out to the project maintainers.
 
 ## Contributing
 
@@ -92,6 +85,13 @@ Contributions to the project are welcome. Please follow the standard GitHub work
 
 ---
 
+## Important Notice
+
+This project was developed as part of a university assignment at the University of Bristol. The code and resources provided here are the property of the University of Bristol. 
+
+**Distribution and Use:**
+- Do not distribute this project or its contents without explicit permission from the University of Bristol.
+- The project is intended for educational purposes and should not be used for commercial or other unauthorised activities.
 
 ## Understanding the Project
 
@@ -107,7 +107,5 @@ For those interested in diving deeper into the project, here are some useful res
 These resources will help you understand the codebase, the functionality of various components, and how to use advanced data structures effectively.
 
 ---
-
-
 
 Thank you for your interest in Scotland Yard! Enjoy your game and happy coding!
